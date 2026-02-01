@@ -10,8 +10,9 @@ from rich.console import Console
 from rich.table import Table
 
 from relay.config import find_config_file, load_config, load_pipeline
+from relay.dashboard import run_dashboard, show_pipeline_status
 from relay.executor import PipelineExecutor
-from relay.models import PipelineConfig, StepConfig
+from relay.models import PipelineConfig, RelayConfig, StepConfig
 
 app = typer.Typer(
     name="relay",
@@ -155,6 +156,29 @@ def list_agents() -> None:
         table.add_row(name, agent.command, " ".join(agent.args))
 
     console.print(table)
+
+
+@app.command()
+def monitor(
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", "-c", help="Pipeline to monitor (optional)"),
+    ] = None,
+    working_dir: Annotated[
+        Path | None,
+        typer.Option("--working-dir", "-w", help="Working directory"),
+    ] = None,
+) -> None:
+    """Launch the terminal dashboard."""
+    config_path = find_config_file()
+    global_config = load_config(config_path) if config_path else load_config(Path("/dev/null"))
+
+    if config:
+        # Monitor a specific pipeline
+        show_pipeline_status(config, global_config)
+    else:
+        # Show general dashboard
+        run_dashboard(global_config, working_dir)
 
 
 def _show_dry_run(pipeline: PipelineConfig, agents: dict) -> None:

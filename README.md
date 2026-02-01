@@ -18,6 +18,12 @@ pip install relay
 
 # Run a pipeline
 relay run --config pipeline.yml
+
+# Launch the terminal dashboard
+relay monitor
+
+# Monitor a specific pipeline
+relay monitor --config pipeline.yml
 ```
 
 ## Example Pipeline
