@@ -1,0 +1,29 @@
+name: "parallel-analysis"
+description: "Analyze code with multiple agents in parallel"
+
+steps:
+  - name: multi-check
+    parallel:
+      - name: security
+        agent: claude-code
+        prompt: "Review the codebase for security vulnerabilities. Focus on: SQL injection, XSS, insecure dependencies. Output findings."
+        output: security-findings.txt
+      
+      - name: performance
+        agent: opencode
+        prompt: "Review the codebase for performance issues. Focus on: N+1 queries, inefficient algorithms, memory leaks. Output findings."
+        output: performance-findings.txt
+      
+      - name: style
+        agent: claude-code
+        prompt: "Review the codebase for code style issues. Focus on: PEP8 compliance, naming conventions, docstrings. Output findings."
+        output: style-findings.txt
+    
+    parallel_strategy: concat
+    output: combined-analysis.txt
+
+  - name: summarize
+    agent: claude-code
+    prompt: "Read the combined analysis and create an executive summary with top 3 priorities."
+    input: combined-analysis.txt
+    output: summary.txt

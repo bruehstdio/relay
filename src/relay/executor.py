@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from rich.console import Console
@@ -12,7 +13,9 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.status import Status
 
-from relay.models import AgentConfig, PipelineConfig, StepConfig, StepResult
+from relay.models import AgentConfig, ParallelStepConfig, PipelineConfig, StepConfig, StepResult
+
+console = Console()
 
 console = Console()
 
@@ -58,7 +61,19 @@ class PipelineExecutor:
         agents: dict[str, AgentConfig],
         previous_output: Path | None,
     ) -> StepResult:
-        """Execute a single pipeline step."""
+        """Execute a single pipeline step (sequential or parallel)."""
+        # Handle parallel steps
+        if step.parallel:
+            return self._execute_parallel_step(step_num, step, agents, previous_output)
+
+        # Handle regular sequential step
+        if not step.agent:
+            return StepResult(
+                step_name=step.name,
+                success=False,
+                error="Step must have either 'agent' or 'parallel' defined",
+            )
+
         agent_config = agents.get(step.agent)
         if not agent_config:
             return StepResult(
@@ -67,76 +82,198 @@ class PipelineExecutor:
                 error=f"Unknown agent: {step.agent}",
             )
 
+        import time
+
         with Status(f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] {step.name}", console=console) as status:
             start_time = time.time()
 
             # Prepare prompt with context
             prompt = self._prepare_prompt(step, previous_output)
 
-            # Build command
-            cmd = [agent_config.command, *agent_config.args]
+            result = self._run_agent(agent_config, prompt, step.working_dir or self.working_dir)
 
-            # Set up environment
-            env = os.environ.copy()
-            env.update(agent_config.env)
-            if "RELAY_STEP_INPUT" in env:
-                del env["RELAY_STEP_INPUT"]
-            if "RELAY_STEP_OUTPUT" in env:
-                del env["RELAY_STEP_OUTPUT"]
+            duration_ms = int((time.time() - start_time) * 1000)
 
-            # Execute
-            try:
-                result = subprocess.run(
-                    cmd,
-                    input=prompt,
-                    capture_output=True,
-                    text=True,
-                    timeout=agent_config.timeout,
-                    cwd=step.working_dir or self.working_dir,
-                    env=env,
+            # Write output to file if specified
+            artifacts: list[Path] = []
+            if step.output and result.success:
+                output_path = self.artifacts_dir / step.output
+                output_path.write_text(result.output)
+                artifacts.append(output_path)
+                result.artifacts = artifacts
+
+            result.duration_ms = duration_ms
+
+            status.update(
+                f"[bold {'green' if result.success else 'red'}]{'✓' if result.success else '✗'}[/bold {'green' if result.success else 'red'}] Step {step_num}: {step.name} "
+                f"([dim]{duration_ms}ms[/dim])"
+            )
+
+            return result
+
+    def _execute_parallel_step(
+        self,
+        step_num: int,
+        step: StepConfig,
+        agents: dict[str, AgentConfig],
+        previous_output: Path | None,
+    ) -> StepResult:
+        """Execute parallel sub-steps concurrently."""
+        import time
+
+        start_time = time.time()
+        parallel_steps = step.parallel
+
+        console.print(f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] {step.name} ([dim]{len(parallel_steps)} parallel tasks[/dim])")
+
+        # Prepare base prompt
+        base_prompt = self._prepare_prompt(step, previous_output)
+
+        # Execute parallel steps
+        results: list[StepResult] = []
+        with ThreadPoolExecutor(max_workers=len(parallel_steps)) as executor:
+            futures = {}
+            for parallel_step in parallel_steps:
+                agent_config = agents.get(parallel_step.agent)
+                if not agent_config:
+                    results.append(StepResult(
+                        step_name=parallel_step.name,
+                        success=False,
+                        error=f"Unknown agent: {parallel_step.agent}",
+                    ))
+                    continue
+
+                # Combine base prompt with parallel step prompt
+                full_prompt = f"{base_prompt}\n\n{parallel_step.prompt}" if base_prompt else parallel_step.prompt
+
+                future = executor.submit(
+                    self._run_agent,
+                    agent_config,
+                    full_prompt,
+                    step.working_dir or self.working_dir
                 )
+                futures[future] = parallel_step
 
-                duration_ms = int((time.time() - start_time) * 1000)
+            for future in as_completed(futures):
+                parallel_step = futures[future]
+                try:
+                    result = future.result()
+                    result.step_name = parallel_step.name
+                    results.append(result)
+                    console.print(f"  [{'green' if result.success else 'red'}]{'✓' if result.success else '✗'}[/{'green' if result.success else 'red'}] {parallel_step.name}")
+                except Exception as e:
+                    results.append(StepResult(
+                        step_name=parallel_step.name,
+                        success=False,
+                        error=str(e),
+                    ))
+                    console.print(f"  [red]✗[/red] {parallel_step.name}: {e}")
 
-                success = result.returncode == 0
-                output = result.stdout
-                error = result.stderr if not success else None
+        # Merge results based on strategy
+        merged_output = self._merge_parallel_outputs(results, step.parallel_strategy)
 
-                # Write output to file if specified
-                artifacts: list[Path] = []
-                if step.output:
-                    output_path = self.artifacts_dir / step.output
-                    output_path.write_text(output)
-                    artifacts.append(output_path)
+        duration_ms = int((time.time() - start_time) * 1000)
+        all_success = all(r.success for r in results)
 
-                status.update(
-                    f"[bold green]✓[/bold green] Step {step_num}: {step.name} "
-                    f"([dim]{duration_ms}ms[/dim])"
-                )
+        # Write merged output if specified
+        artifacts: list[Path] = []
+        if step.output and all_success:
+            output_path = self.artifacts_dir / step.output
+            output_path.write_text(merged_output)
+            artifacts.append(output_path)
 
-                return StepResult(
-                    step_name=step.name,
-                    success=success,
-                    output=output,
-                    error=error,
-                    duration_ms=duration_ms,
-                    artifacts=artifacts,
-                )
+        return StepResult(
+            step_name=step.name,
+            success=all_success,
+            output=merged_output,
+            error=None if all_success else f"{sum(1 for r in results if not r.success)} parallel tasks failed",
+            duration_ms=duration_ms,
+            artifacts=artifacts,
+        )
 
-            except subprocess.TimeoutExpired:
-                return StepResult(
-                    step_name=step.name,
-                    success=False,
-                    error=f"Timeout after {agent_config.timeout}s",
-                    duration_ms=int((time.time() - start_time) * 1000),
-                )
-            except Exception as e:
-                return StepResult(
-                    step_name=step.name,
-                    success=False,
-                    error=str(e),
-                    duration_ms=int((time.time() - start_time) * 1000),
-                )
+    def _run_agent(
+        self,
+        agent_config: AgentConfig,
+        prompt: str,
+        working_dir: Path,
+    ) -> StepResult:
+        """Run a single agent command."""
+        cmd = [agent_config.command, *agent_config.args]
+
+        # Set up environment
+        env = os.environ.copy()
+        env.update(agent_config.env)
+        if "RELAY_STEP_INPUT" in env:
+            del env["RELAY_STEP_INPUT"]
+        if "RELAY_STEP_OUTPUT" in env:
+            del env["RELAY_STEP_OUTPUT"]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                input=prompt,
+                capture_output=True,
+                text=True,
+                timeout=agent_config.timeout,
+                cwd=working_dir,
+                env=env,
+            )
+
+            success = result.returncode == 0
+            return StepResult(
+                step_name="",  # Will be set by caller
+                success=success,
+                output=result.stdout,
+                error=result.stderr if not success else None,
+                duration_ms=0,  # Will be set by caller
+                artifacts=[],
+            )
+
+        except subprocess.TimeoutExpired:
+            return StepResult(
+                step_name="",
+                success=False,
+                error=f"Timeout after {agent_config.timeout}s",
+                duration_ms=0,
+                artifacts=[],
+            )
+        except Exception as e:
+            return StepResult(
+                step_name="",
+                success=False,
+                error=str(e),
+                duration_ms=0,
+                artifacts=[],
+            )
+
+    def _merge_parallel_outputs(self, results: list[StepResult], strategy: str) -> str:
+        """Merge outputs from parallel steps based on strategy."""
+        if strategy == "first":
+            for result in results:
+                if result.success and result.output:
+                    return result.output
+            return ""
+
+        elif strategy == "json":
+            outputs = {}
+            for result in results:
+                outputs[result.step_name] = {
+                    "success": result.success,
+                    "output": result.output,
+                    "error": result.error,
+                }
+            return json.dumps(outputs, indent=2)
+
+        else:  # concat (default)
+            parts = []
+            for result in results:
+                parts.append(f"=== {result.step_name} ===")
+                if result.success:
+                    parts.append(result.output)
+                else:
+                    parts.append(f"ERROR: {result.error}")
+                parts.append("")
+            return "\n".join(parts)
 
     def _prepare_prompt(self, step: StepConfig, previous_output: Path | None) -> str:
         """Prepare the prompt for a step, including context from previous steps."""

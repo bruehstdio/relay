@@ -17,16 +17,27 @@ class AgentConfig(BaseModel):
     timeout: int = Field(default=300, description="Timeout in seconds")
 
 
+class ParallelStepConfig(BaseModel):
+    """Configuration for a parallel sub-step."""
+
+    name: str = Field(description="Unique name for this parallel step")
+    agent: str = Field(description="Agent to use")
+    prompt: str = Field(description="Prompt/instructions")
+    output: str | None = Field(default=None, description="Output file")
+
+
 class StepConfig(BaseModel):
     """Configuration for a pipeline step."""
 
     name: str = Field(description="Unique name for this step")
-    agent: str = Field(description="Agent to use (refers to agents config)")
-    prompt: str = Field(description="Prompt/instructions for the agent")
+    agent: str | None = Field(default=None, description="Agent to use (refers to agents config)")
+    prompt: str | None = Field(default=None, description="Prompt/instructions for the agent")
     input: str | None = Field(default=None, description="Input file from previous step")
     output: str | None = Field(default=None, description="Output file to save")
     working_dir: Path | None = Field(default=None, description="Working directory for this step")
     continue_on_error: bool = Field(default=False, description="Continue if this step fails")
+    parallel: list[ParallelStepConfig] | None = Field(default=None, description="Parallel sub-steps")
+    parallel_strategy: str = Field(default="concat", description="How to merge parallel outputs: concat, json, first")
 
     @field_validator("working_dir")
     @classmethod
