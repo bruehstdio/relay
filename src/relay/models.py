@@ -52,6 +52,12 @@ def _default_agents() -> dict[str, AgentConfig]:
             command="opencode",
             env={"PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:/usr/sbin"}
         ),
+        "opencode-run": AgentConfig(
+            command="opencode",
+            args=["run"],
+            env={"PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:/usr/sbin"}
+        ),
+        "oh-my-opencode": AgentConfig(command="oh-my-opencode"),
         "aider": AgentConfig(command="aider"),
         "codex": AgentConfig(command="codex"),
     }
