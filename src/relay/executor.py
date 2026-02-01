@@ -1,0 +1,176 @@
+"""Pipeline execution engine."""
+
+from __future__ import annotations
+
+import os
+import subprocess
+import time
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.status import Status
+
+if TYPE_CHECKING:
+    from relay.models import AgentConfig, PipelineConfig, StepConfig, StepResult
+
+console = Console()
+
+
+class PipelineExecutor:
+    """Executes pipelines with multiple agent steps."""
+
+    def __init__(self, working_dir: Path | None = None) -> None:
+        self.working_dir = working_dir or Path.cwd()
+        self.artifacts_dir = self.working_dir / ".relay" / "artifacts"
+        self.artifacts_dir.mkdir(parents=True, exist_ok=True)
+        self.results: list[StepResult] = []
+
+    def execute(
+        self, config: PipelineConfig, agents: dict[str, AgentConfig]
+    ) -> list[StepResult]:
+        """Execute a pipeline configuration."""
+        console.print(Panel.fit(f"[bold blue]Pipeline: {config.name}[/bold blue]"))
+        if config.description:
+            console.print(f"[dim]{config.description}[/dim]\n")
+
+        self.results = []
+        previous_output: Path | None = None
+
+        for i, step in enumerate(config.steps, 1):
+            result = self._execute_step(i, step, agents, previous_output)
+            self.results.append(result)
+
+            if not result.success and not step.continue_on_error:
+                console.print(f"\n[bold red]✗ Pipeline failed at step {i}: {step.name}[/bold red]")
+                break
+
+            if result.artifacts:
+                previous_output = result.artifacts[0]
+
+        self._print_summary()
+        return self.results
+
+    def _execute_step(
+        self,
+        step_num: int,
+        step: StepConfig,
+        agents: dict[str, AgentConfig],
+        previous_output: Path | None,
+    ) -> StepResult:
+        """Execute a single pipeline step."""
+        agent_config = agents.get(step.agent)
+        if not agent_config:
+            return StepResult(
+                step_name=step.name,
+                success=False,
+                error=f"Unknown agent: {step.agent}",
+            )
+
+        with Status(f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] {step.name}", console=console) as status:
+            start_time = time.time()
+
+            # Prepare prompt with context
+            prompt = self._prepare_prompt(step, previous_output)
+
+            # Build command
+            cmd = [agent_config.command, *agent_config.args]
+            if step.output:
+                # Many agents support --output or we redirect stdout
+                cmd.extend(["--output", str(self.artifacts_dir / step.output)])
+
+            # Set up environment
+            env = os.environ.copy()
+            env.update(agent_config.env)
+            if "RELAY_STEP_INPUT" in env:
+                del env["RELAY_STEP_INPUT"]
+            if "RELAY_STEP_OUTPUT" in env:
+                del env["RELAY_STEP_OUTPUT"]
+
+            # Execute
+            try:
+                result = subprocess.run(
+                    cmd,
+                    input=prompt,
+                    capture_output=True,
+                    text=True,
+                    timeout=agent_config.timeout,
+                    cwd=step.working_dir or self.working_dir,
+                    env=env,
+                )
+
+                duration_ms = int((time.time() - start_time) * 1000)
+
+                success = result.returncode == 0
+                output = result.stdout
+                error = result.stderr if not success else None
+
+                artifacts: list[Path] = []
+                if step.output and (self.artifacts_dir / step.output).exists():
+                    artifacts.append(self.artifacts_dir / step.output)
+
+                status.update(
+                    f"[bold green]✓[/bold green] Step {step_num}: {step.name} "
+                    f"([dim]{duration_ms}ms[/dim])"
+                )
+
+                return StepResult(
+                    step_name=step.name,
+                    success=success,
+                    output=output,
+                    error=error,
+                    duration_ms=duration_ms,
+                    artifacts=artifacts,
+                )
+
+            except subprocess.TimeoutExpired:
+                return StepResult(
+                    step_name=step.name,
+                    success=False,
+                    error=f"Timeout after {agent_config.timeout}s",
+                    duration_ms=int((time.time() - start_time) * 1000),
+                )
+            except Exception as e:
+                return StepResult(
+                    step_name=step.name,
+                    success=False,
+                    error=str(e),
+                    duration_ms=int((time.time() - start_time) * 1000),
+                )
+
+    def _prepare_prompt(self, step: StepConfig, previous_output: Path | None) -> str:
+        """Prepare the prompt for a step, including context from previous steps."""
+        prompt = step.prompt
+
+        # Add input file content if specified
+        if step.input:
+            input_path = self.artifacts_dir / step.input
+            if input_path.exists():
+                content = input_path.read_text()
+                prompt = f"Input file ({step.input}):\n```\n{content}\n```\n\n{prompt}"
+
+        # Add previous step output if no explicit input
+        elif previous_output and previous_output.exists():
+            content = previous_output.read_text()
+            prompt = f"Previous step output:\n```\n{content}\n```\n\n{prompt}"
+
+        return prompt
+
+    def _print_summary(self) -> None:
+        """Print execution summary."""
+        successful = sum(1 for r in self.results if r.success)
+        total = len(self.results)
+        total_time = sum(r.duration_ms for r in self.results)
+
+        color = "green" if successful == total else "yellow" if successful > 0 else "red"
+
+        console.print(f"\n[bold {color}]Pipeline complete:[/bold {color}] {successful}/{total} steps succeeded")
+        console.print(f"[dim]Total time: {total_time}ms[/dim]")
+
+        if any(r.error for r in self.results):
+            console.print("\n[bold red]Errors:[/bold red]")
+            for r in self.results:
+                if r.error:
+                    console.print(f"  [red]• {r.step_name}:[/red] {r.error}")

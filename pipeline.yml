@@ -1,0 +1,39 @@
+name: "example-pipeline"
+description: "Example: Plan → Code → Review with multiple agents"
+
+steps:
+  - name: plan
+    agent: claude-code
+    prompt: |
+      Analyze the current codebase structure and create a detailed plan
+      for adding a new feature. Consider:
+      - Existing architecture and patterns
+      - File organization
+      - API design if applicable
+      - Testing approach
+      
+      Write your analysis and plan to plan.md.
+    output: plan.md
+
+  - name: implement
+    agent: opencode
+    prompt: |
+      Read the plan from plan.md and implement the feature.
+      Follow the existing code style and patterns in the codebase.
+      Make minimal, focused changes.
+    input: plan.md
+    output: changes.patch
+
+  - name: review
+    agent: claude-code
+    prompt: |
+      Review the implementation. Check for:
+      - Code quality and best practices
+      - Potential bugs or edge cases
+      - Test coverage
+      - Documentation
+      
+      Write your review to review.md with specific suggestions.
+    input: changes.patch
+    output: review.md
+    continue_on_error: true
