@@ -58,6 +58,10 @@ def _default_agents() -> dict[str, AgentConfig]:
             env={"PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:/usr/sbin"}
         ),
         "oh-my-opencode": AgentConfig(command="oh-my-opencode"),
+        "gemini": AgentConfig(
+            command="gemini",
+            env={"PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:/usr/sbin"}
+        ),
         "aider": AgentConfig(command="aider"),
         "codex": AgentConfig(command="codex"),
     }
