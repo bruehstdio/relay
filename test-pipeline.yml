@@ -1,0 +1,18 @@
+name: "test-opencode"
+description: "Test pipeline using OpenCode"
+
+steps:
+  - name: analyze
+    agent: opencode
+    prompt: |
+      Look at the current directory structure and create a summary of what files exist.
+      Write the summary to summary.txt.
+    output: summary.txt
+
+  - name: improve
+    agent: opencode
+    prompt: |
+      Read the summary from summary.txt and suggest one improvement for this project.
+      Write your suggestion to suggestion.txt.
+    input: summary.txt
+    output: suggestion.txt

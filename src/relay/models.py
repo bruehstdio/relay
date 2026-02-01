@@ -44,11 +44,21 @@ class PipelineConfig(BaseModel):
     steps: list[StepConfig] = Field(description="Steps to execute")
 
 
+def _default_agents() -> dict[str, AgentConfig]:
+    """Default agent configurations."""
+    return {
+        "claude-code": AgentConfig(command="claude"),
+        "opencode": AgentConfig(command="opencode"),
+        "aider": AgentConfig(command="aider"),
+        "codex": AgentConfig(command="codex"),
+    }
+
+
 class RelayConfig(BaseModel):
     """Root configuration for Relay."""
 
     agents: dict[str, AgentConfig] = Field(
-        default_factory=dict, description="Agent configurations"
+        default_factory=_default_agents, description="Agent configurations"
     )
     pipelines: dict[str, list[str]] = Field(
         default_factory=dict, description="Named pipeline step sequences"
@@ -56,14 +66,9 @@ class RelayConfig(BaseModel):
 
     @field_validator("agents")
     @classmethod
-    def add_default_agents(cls, v: dict[str, AgentConfig]) -> dict[str, AgentConfig]:
-        """Add default agent configurations if not overridden."""
-        defaults = {
-            "claude-code": AgentConfig(command="claude"),
-            "opencode": AgentConfig(command="opencode"),
-            "aider": AgentConfig(command="aider"),
-            "codex": AgentConfig(command="codex"),
-        }
+    def merge_agents(cls, v: dict[str, AgentConfig]) -> dict[str, AgentConfig]:
+        """Merge user agents with defaults."""
+        defaults = _default_agents()
         defaults.update(v)
         return defaults
 

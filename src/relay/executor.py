@@ -6,15 +6,13 @@ import os
 import subprocess
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.status import Status
 
-if TYPE_CHECKING:
-    from relay.models import AgentConfig, PipelineConfig, StepConfig, StepResult
+from relay.models import AgentConfig, PipelineConfig, StepConfig, StepResult
 
 console = Console()
 
