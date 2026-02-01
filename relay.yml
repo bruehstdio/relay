@@ -1,0 +1,13 @@
+agents:
+  mock-ls:
+    command: ls
+    args: ["."]
+  
+  mock-wc:
+    command: wc
+    args: ["-l"]
+
+pipelines:
+  default:
+    - list-files
+    - count-lines

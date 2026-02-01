@@ -48,7 +48,10 @@ def _default_agents() -> dict[str, AgentConfig]:
     """Default agent configurations."""
     return {
         "claude-code": AgentConfig(command="claude"),
-        "opencode": AgentConfig(command="opencode"),
+        "opencode": AgentConfig(
+            command="opencode",
+            env={"PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:/usr/sbin"}
+        ),
         "aider": AgentConfig(command="aider"),
         "codex": AgentConfig(command="codex"),
     }

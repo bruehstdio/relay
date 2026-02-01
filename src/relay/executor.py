@@ -75,9 +75,6 @@ class PipelineExecutor:
 
             # Build command
             cmd = [agent_config.command, *agent_config.args]
-            if step.output:
-                # Many agents support --output or we redirect stdout
-                cmd.extend(["--output", str(self.artifacts_dir / step.output)])
 
             # Set up environment
             env = os.environ.copy()
@@ -105,9 +102,12 @@ class PipelineExecutor:
                 output = result.stdout
                 error = result.stderr if not success else None
 
+                # Write output to file if specified
                 artifacts: list[Path] = []
-                if step.output and (self.artifacts_dir / step.output).exists():
-                    artifacts.append(self.artifacts_dir / step.output)
+                if step.output:
+                    output_path = self.artifacts_dir / step.output
+                    output_path.write_text(output)
+                    artifacts.append(output_path)
 
                 status.update(
                     f"[bold green]✓[/bold green] Step {step_num}: {step.name} "

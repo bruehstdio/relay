@@ -1,0 +1,14 @@
+name: "test-mock"
+description: "Test pipeline using mock commands"
+
+steps:
+  - name: list-files
+    agent: mock-ls
+    prompt: "List current directory"
+    output: files.txt
+
+  - name: count-lines
+    agent: mock-wc
+    prompt: "Count lines in files.txt"
+    input: files.txt
+    output: count.txt
