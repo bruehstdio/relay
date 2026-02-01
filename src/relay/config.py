@@ -2,11 +2,38 @@
 
 from __future__ import annotations
 
+import os
+import re
 from pathlib import Path
+from typing import Any
 
 import yaml
 
 from relay.models import PipelineConfig, RelayConfig
+
+
+def _interpolate_env_vars(value: Any) -> Any:
+    """Recursively interpolate environment variables in a value.
+    
+    Supports ${VAR} and ${VAR:-default} syntax.
+    """
+    if isinstance(value, str):
+        pattern = r'\$\{([^}]+)\}'
+        
+        def replace_var(match: re.Match) -> str:
+            var_expr = match.group(1)
+            if ':-' in var_expr:
+                var_name, default = var_expr.split(':-', 1)
+                return os.environ.get(var_name, default)
+            else:
+                return os.environ.get(var_expr, '')
+        
+        return re.sub(pattern, replace_var, value)
+    elif isinstance(value, dict):
+        return {k: _interpolate_env_vars(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [_interpolate_env_vars(item) for item in value]
+    return value
 
 
 def load_config(path: Path) -> RelayConfig:
@@ -17,6 +44,7 @@ def load_config(path: Path) -> RelayConfig:
     with open(path) as f:
         data = yaml.safe_load(f) or {}
 
+    data = _interpolate_env_vars(data)
     return RelayConfig.model_validate(data)
 
 
@@ -25,6 +53,7 @@ def load_pipeline(path: Path) -> PipelineConfig:
     with open(path) as f:
         data = yaml.safe_load(f) or {}
 
+    data = _interpolate_env_vars(data)
     return PipelineConfig.model_validate(data)
 
 

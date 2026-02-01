@@ -1,0 +1,11 @@
+name: "PR Review for PR #${PR_NUMBER:-unknown}"
+description: "Automated PR review using multiple agents"
+
+steps:
+  - name: review
+    agent: ${DEFAULT_AGENT:-claude-code}
+    prompt: |
+      Review PR #${PR_NUMBER} in repository ${REPO_NAME}.
+      Focus on: code quality, security, and best practices.
+      Provide a detailed review with actionable feedback.
+    output: review-${PR_NUMBER}.md
