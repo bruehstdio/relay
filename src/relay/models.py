@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any  # noqa: F401
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -36,8 +36,12 @@ class StepConfig(BaseModel):
     output: str | None = Field(default=None, description="Output file to save")
     working_dir: Path | None = Field(default=None, description="Working directory for this step")
     continue_on_error: bool = Field(default=False, description="Continue if this step fails")
-    parallel: list[ParallelStepConfig] | None = Field(default=None, description="Parallel sub-steps")
-    parallel_strategy: str = Field(default="concat", description="How to merge parallel outputs: concat, json, first")
+    parallel: list[ParallelStepConfig] | None = Field(
+        default=None, description="Parallel sub-steps"
+    )
+    parallel_strategy: str = Field(
+        default="concat", description="How to merge parallel outputs: concat, json, first"
+    )
 
     @field_validator("working_dir")
     @classmethod

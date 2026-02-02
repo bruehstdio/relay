@@ -104,9 +104,11 @@ class PipelineExecutor:
 
             result.duration_ms = duration_ms
 
+            status_color = "green" if result.success else "red"
+            status_icon = "✓" if result.success else "✗"
             status.update(
-                f"[bold {'green' if result.success else 'red'}]{'✓' if result.success else '✗'}[/bold {'green' if result.success else 'red'}] Step {step_num}: {step.name} "
-                f"([dim]{duration_ms}ms[/dim])"
+                f"[bold {status_color}]{status_icon}[/bold {status_color}] "
+                f"Step {step_num}: {step.name} ([dim]{duration_ms}ms[/dim])"
             )
 
             return result
@@ -124,7 +126,10 @@ class PipelineExecutor:
         start_time = time.time()
         parallel_steps = step.parallel
 
-        console.print(f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] {step.name} ([dim]{len(parallel_steps)} parallel tasks[/dim])")
+        console.print(
+            f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] "
+            f"{step.name} ([dim]{len(parallel_steps)} parallel tasks[/dim])"
+        )
 
         # Prepare base prompt
         base_prompt = self._prepare_prompt(step, previous_output)
@@ -144,7 +149,10 @@ class PipelineExecutor:
                     continue
 
                 # Combine base prompt with parallel step prompt
-                full_prompt = f"{base_prompt}\n\n{parallel_step.prompt}" if base_prompt else parallel_step.prompt
+                if base_prompt:
+                    full_prompt = f"{base_prompt}\n\n{parallel_step.prompt}"
+                else:
+                    full_prompt = parallel_step.prompt
 
                 future = executor.submit(
                     self._run_agent,
@@ -160,7 +168,9 @@ class PipelineExecutor:
                     result = future.result()
                     result.step_name = parallel_step.name
                     results.append(result)
-                    console.print(f"  [{'green' if result.success else 'red'}]{'✓' if result.success else '✗'}[/{'green' if result.success else 'red'}] {parallel_step.name}")
+                    status_icon = "✓" if result.success else "✗"
+                    status_color = "green" if result.success else "red"
+                    console.print(f"  [{status_color}]{status_icon}[/{status_color}] {parallel_step.name}")
                 except Exception as e:
                     results.append(StepResult(
                         step_name=parallel_step.name,
@@ -186,7 +196,8 @@ class PipelineExecutor:
             step_name=step.name,
             success=all_success,
             output=merged_output,
-            error=None if all_success else f"{sum(1 for r in results if not r.success)} parallel tasks failed",
+            error=None if all_success else f"{sum(1 for r in results if not r.success)} "
+            "parallel tasks failed",
             duration_ms=duration_ms,
             artifacts=artifacts,
         )
@@ -301,7 +312,10 @@ class PipelineExecutor:
 
         color = "green" if successful == total else "yellow" if successful > 0 else "red"
 
-        console.print(f"\n[bold {color}]Pipeline complete:[/bold {color}] {successful}/{total} steps succeeded")
+        console.print(
+            f"\n[bold {color}]Pipeline complete:[/bold {color}] "
+            f"{successful}/{total} steps succeeded"
+        )
         console.print(f"[dim]Total time: {total_time}ms[/dim]")
 
         if any(r.error for r in self.results):
