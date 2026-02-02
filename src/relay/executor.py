@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.status import Status
 
-from relay.models import AgentConfig, ParallelStepConfig, PipelineConfig, StepConfig, StepResult
+from relay.models import AgentConfig, PipelineConfig, StepConfig, StepResult
 
 console = Console()
 
@@ -84,7 +84,8 @@ class PipelineExecutor:
 
         import time
 
-        with Status(f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] {step.name}", console=console) as status:
+        status_msg = f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] {step.name}"
+        with Status(status_msg, console=console) as status:
             start_time = time.time()
 
             # Prepare prompt with context
@@ -170,7 +171,8 @@ class PipelineExecutor:
                     results.append(result)
                     status_icon = "✓" if result.success else "✗"
                     status_color = "green" if result.success else "red"
-                    console.print(f"  [{status_color}]{status_icon}[/{status_color}] {parallel_step.name}")
+                    msg = f"  [{status_color}]{status_icon}[/{status_color}] {parallel_step.name}"
+                    console.print(msg)
                 except Exception as e:
                     results.append(StepResult(
                         step_name=parallel_step.name,
