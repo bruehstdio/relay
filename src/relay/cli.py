@@ -12,7 +12,7 @@ from rich.table import Table
 from relay.config import find_config_file, load_config, load_pipeline
 from relay.dashboard import run_dashboard, show_pipeline_status
 from relay.executor import PipelineExecutor
-from relay.models import PipelineConfig, RelayConfig
+from relay.models import PipelineConfig
 
 app = typer.Typer(
     name="relay",
