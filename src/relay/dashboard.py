@@ -56,13 +56,13 @@ def make_agents_panel(config: RelayConfig) -> Panel:
     table = Table(show_header=False, box=None, expand=True)
     table.add_column("Agent", style="cyan")
     table.add_column("Command", style="green")
-    
+
     for name, agent in sorted(config.agents.items()):
         cmd = f"{agent.command} {' '.join(agent.args)}".strip()
         if len(cmd) > 25:
             cmd = cmd[:22] + "..."
         table.add_row(name, cmd)
-    
+
     return Panel(table, title="[bold]Agents[/bold]", border_style="cyan")
 
 
@@ -71,14 +71,14 @@ def make_artifacts_panel(artifacts_dir: Path) -> Panel:
     table = Table(show_header=False, box=None, expand=True)
     table.add_column("File", style="yellow")
     table.add_column("Size", justify="right", style="dim")
-    
+
     if artifacts_dir.exists():
         files = sorted(artifacts_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
         for f in files[:10]:  # Show last 10
             size = f.stat().st_size
             size_str = f"{size}B" if size < 1024 else f"{size//1024}KB"
             table.add_row(f.name, size_str)
-    
+
     return Panel(table, title="[bold]Recent Artifacts[/bold]", border_style="yellow")
 
 
@@ -93,7 +93,7 @@ def make_body_panel() -> Panel:
     content.append("Press ", style="dim")
     content.append("q", style="bold red")
     content.append(" to quit", style="dim")
-    
+
     return Panel(content, title="[bold]Status[/bold]", border_style="green")
 
 
@@ -109,9 +109,9 @@ def run_dashboard(config: RelayConfig, working_dir: Path | None = None) -> None:
     """Run the terminal dashboard."""
     working_dir = working_dir or Path.cwd()
     artifacts_dir = working_dir / ".relay" / "artifacts"
-    
+
     layout = make_layout()
-    
+
     with Live(layout, refresh_per_second=4, screen=True) as live:
         while True:
             # Update layout
@@ -120,7 +120,7 @@ def run_dashboard(config: RelayConfig, working_dir: Path | None = None) -> None:
             layout["artifacts"].update(make_artifacts_panel(artifacts_dir))
             layout["body"].update(make_body_panel())
             layout["footer"].update(make_footer())
-            
+
             time.sleep(0.25)
 
 
@@ -128,24 +128,26 @@ def show_pipeline_status(pipeline_file: Path, config: RelayConfig) -> None:
     """Show live status of a running pipeline."""
     from relay.config import load_pipeline
     from relay.executor import PipelineExecutor
-    
+
     pipeline = load_pipeline(pipeline_file)
-    
+
     # Create progress display
     progress = Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     )
-    
+
     task = progress.add_task(f"[cyan]Pipeline: {pipeline.name}[/cyan]", total=len(pipeline.steps))
-    
+
     with Live(progress, console=console, refresh_per_second=4) as live:
         executor = PipelineExecutor()
-        
+
         for i, step in enumerate(pipeline.steps, 1):
-            progress.update(task, description=f"[cyan]Step {i}/{len(pipeline.steps)}: {step.name}[/cyan]")
-            
+            progress.update(
+                task, description=f"[cyan]Step {i}/{len(pipeline.steps)}: {step.name}[/cyan]"
+            )
+
             # Execute single step
             result = executor._execute_step(i, step, config.agents, None)
             executor.results.append(result)

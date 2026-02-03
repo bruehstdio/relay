@@ -12,7 +12,7 @@ from rich.table import Table
 from relay.config import find_config_file, load_config, load_pipeline
 from relay.dashboard import run_dashboard, show_pipeline_status
 from relay.executor import PipelineExecutor
-from relay.models import PipelineConfig, RelayConfig, StepConfig
+from relay.models import PipelineConfig, RelayConfig
 
 app = typer.Typer(
     name="relay",
@@ -40,7 +40,10 @@ def run(
     """Run a pipeline."""
     # Load global config
     global_config_path = find_config_file()
-    global_config = load_config(global_config_path) if global_config_path else load_config(Path("/dev/null"))
+    if global_config_path:
+        global_config = load_config(global_config_path)
+    else:
+        global_config = load_config(Path("/dev/null"))
 
     # Load pipeline config
     if config:
@@ -79,7 +82,7 @@ agents:
   claude-code:
     command: claude
     args: ["--verbose"]
-  
+
   opencode:
     command: opencode
     env:

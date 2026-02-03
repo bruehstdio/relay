@@ -14,12 +14,12 @@ from relay.models import PipelineConfig, RelayConfig
 
 def _interpolate_env_vars(value: Any) -> Any:
     """Recursively interpolate environment variables in a value.
-    
+
     Supports ${VAR} and ${VAR:-default} syntax.
     """
     if isinstance(value, str):
         pattern = r'\$\{([^}]+)\}'
-        
+
         def replace_var(match: re.Match) -> str:
             var_expr = match.group(1)
             if ':-' in var_expr:
@@ -27,7 +27,7 @@ def _interpolate_env_vars(value: Any) -> Any:
                 return os.environ.get(var_name, default)
             else:
                 return os.environ.get(var_expr, '')
-        
+
         return re.sub(pattern, replace_var, value)
     elif isinstance(value, dict):
         return {k: _interpolate_env_vars(v) for k, v in value.items()}
