@@ -10,7 +10,6 @@ from pathlib import Path
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.status import Status
 
 from relay.models import AgentConfig, PipelineConfig, StepConfig, StepResult

@@ -149,18 +149,20 @@ def show_pipeline_status(pipeline_file: Path, config: RelayConfig) -> None:
             # Execute single step
             result = executor._execute_step(i, step, config.agents, None)
             executor.results.append(result)
-            
+
             if result.success:
                 progress.console.print(f"[green]✓[/green] {step.name} ({result.duration_ms}ms)")
             else:
                 progress.console.print(f"[red]✗[/red] {step.name}: {result.error}")
                 if not step.continue_on_error:
                     break
-            
+
             progress.advance(task)
-        
+
         # Summary
         successful = sum(1 for r in executor.results if r.success)
         total = len(executor.results)
         color = "green" if successful == total else "yellow" if successful > 0 else "red"
-        progress.console.print(f"\n[{color}]Pipeline complete: {successful}/{total} steps succeeded[/]")
+        progress.console.print(
+            f"\n[{color}]Pipeline complete: {successful}/{total} steps succeeded[/]"
+        )
