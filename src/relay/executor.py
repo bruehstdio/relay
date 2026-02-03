@@ -124,7 +124,7 @@ class PipelineExecutor:
         import time
 
         start_time = time.time()
-        parallel_steps = step.parallel
+        parallel_steps = step.parallel or []
 
         console.print(
             f"[bold cyan]Step {step_num}/{len(self.results) + 1}:[/bold cyan] "
@@ -289,7 +289,7 @@ class PipelineExecutor:
 
     def _prepare_prompt(self, step: StepConfig, previous_output: Path | None) -> str:
         """Prepare the prompt for a step, including context from previous steps."""
-        prompt = step.prompt
+        prompt = step.prompt or ""
 
         # Add input file content if specified
         if step.input:
