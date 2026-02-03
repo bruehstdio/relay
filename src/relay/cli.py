@@ -75,7 +75,7 @@ def init(
 ) -> None:
     """Initialize a new Relay project with example files."""
     # Create relay.yml
-    config_content = f'''# Relay configuration
+    config_content = '''# Relay configuration
 # Define your agents and pipelines here
 
 agents:
@@ -139,9 +139,9 @@ steps:
         pipeline_path.write_text(pipeline_content)
         console.print(f"[green]Created:[/green] {pipeline_path}")
 
-    console.print(f"\n[bold]Next steps:[/bold]")
+    console.print("\n[bold]Next steps:[/bold]")
     console.print(f"  1. Edit {pipeline_path} to define your workflow")
-    console.print(f"  2. Run: relay run")
+    console.print("  2. Run: relay run")
 
 
 @app.command()

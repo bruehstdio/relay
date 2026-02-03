@@ -112,7 +112,7 @@ def run_dashboard(config: RelayConfig, working_dir: Path | None = None) -> None:
 
     layout = make_layout()
 
-    with Live(layout, refresh_per_second=4, screen=True) as live:
+    with Live(layout, refresh_per_second=4, screen=True):
         while True:
             # Update layout
             layout["header"].update(make_header(config))
@@ -140,7 +140,7 @@ def show_pipeline_status(pipeline_file: Path, config: RelayConfig) -> None:
 
     task = progress.add_task(f"[cyan]Pipeline: {pipeline.name}[/cyan]", total=len(pipeline.steps))
 
-    with Live(progress, console=console, refresh_per_second=4) as live:
+    with Live(progress, console=console, refresh_per_second=4):
         executor = PipelineExecutor()
 
         for i, step in enumerate(pipeline.steps, 1):
