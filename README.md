@@ -1,5 +1,8 @@
 # Relay
 
+[![CI](https://github.com/danielfbmbot/relay/actions/workflows/ci.yml/badge.svg)](https://github.com/danielfbmbot/relay/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/danielfbmbot/relay/branch/main/graph/badge.svg)](https://codecov.io/gh/danielfbmbot/relay)
+
 Chain AI coding agents like a CI pipeline. Pass work from Claude Code → OpenCode → Aider (or any combination) with shared context and artifacts.
 
 ## Why?
