@@ -12,7 +12,7 @@ from rich.table import Table
 from relay.config import find_config_file, load_config, load_pipeline
 from relay.dashboard import run_dashboard, show_pipeline_status
 from relay.executor import PipelineExecutor
-from relay.models import PipelineConfig
+from relay.models import AgentConfig, PipelineConfig
 
 app = typer.Typer(
     name="relay",
@@ -184,7 +184,7 @@ def monitor(
         run_dashboard(global_config, working_dir)
 
 
-def _show_dry_run(pipeline: PipelineConfig, agents: dict) -> None:
+def _show_dry_run(pipeline: PipelineConfig, agents: dict[str, AgentConfig]) -> None:
     """Show what would be executed without running."""
     console.print(f"\n[bold]Pipeline:[/bold] {pipeline.name}")
     if pipeline.description:
@@ -192,7 +192,7 @@ def _show_dry_run(pipeline: PipelineConfig, agents: dict) -> None:
 
     console.print(f"\n[bold]Steps ({len(pipeline.steps)}):[/bold]")
     for i, step in enumerate(pipeline.steps, 1):
-        agent = agents.get(step.agent)
+        agent = agents.get(step.agent) if step.agent else None
         cmd = f"{agent.command} {' '.join(agent.args)}" if agent else f"[{step.agent}]"
         console.print(f"  {i}. [cyan]{step.name}[/cyan] → {cmd}")
         if step.input:

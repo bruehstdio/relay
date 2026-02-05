@@ -20,7 +20,7 @@ def _interpolate_env_vars(value: Any) -> Any:
     if isinstance(value, str):
         pattern = r'\$\{([^}]+)\}'
 
-        def replace_var(match: re.Match) -> str:
+        def replace_var(match: re.Match[str]) -> str:
             var_expr = match.group(1)
             if ':-' in var_expr:
                 var_name, default = var_expr.split(':-', 1)
