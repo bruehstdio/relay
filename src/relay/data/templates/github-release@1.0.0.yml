@@ -1,0 +1,36 @@
+# GitHub Release Template
+# Create a release with artifacts
+
+name: github-release
+description: Create a GitHub release with artifacts
+
+steps:
+  - name: changelog
+    agent: claude-code
+    prompt: |
+      Generate a changelog for the new release.
+      Look at git commits since the last tag.
+      Categorize changes: Features, Bug Fixes, Breaking Changes
+      Write to CHANGELOG.md
+    output: CHANGELOG.md
+
+  - name: build-artifacts
+    agent: claude-code
+    prompt: |
+      Build release artifacts for this project.
+      This may include:
+      - Compiled binaries
+      - Distribution packages (wheel, npm tarball)
+      - Documentation
+      Place artifacts in dist/ directory
+    output: build-artifacts.md
+
+  - name: create-release
+    agent: claude-code
+    prompt: |
+      Create a GitHub release.
+      Use the changelog from CHANGELOG.md
+      Tag the release with the version.
+      Upload all artifacts from dist/ directory.
+      Run: gh release create ${VERSION} --notes-file CHANGELOG.md dist/*
+    output: release-results.md

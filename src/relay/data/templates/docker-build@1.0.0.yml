@@ -1,0 +1,33 @@
+# Docker Build Template
+# Build and push Docker image
+
+name: docker-build
+description: Build and push Docker image to registry
+
+steps:
+  - name: build
+    agent: claude-code
+    prompt: |
+      Build the Docker image for this project.
+      Look for Dockerfile in the current directory.
+      Use appropriate tag based on project name and version.
+      Run: docker build -t ${IMAGE_NAME}:${VERSION} .
+      Report the build result.
+    output: docker-build-results.md
+
+  - name: test-image
+    agent: claude-code
+    prompt: |
+      Test the built Docker image.
+      Run the image locally and verify it starts correctly.
+      Check: docker run --rm ${IMAGE_NAME}:${VERSION} --version (or similar)
+    output: docker-test-results.md
+
+  - name: push
+    agent: claude-code
+    prompt: |
+      Push the Docker image to the registry.
+      Ensure proper tagging for registry (docker.io, GHCR, etc.)
+      Run: docker push ${IMAGE_NAME}:${VERSION}
+      Also push as 'latest' if this is a release version.
+    output: docker-push-results.md

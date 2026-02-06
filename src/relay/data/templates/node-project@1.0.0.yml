@@ -1,0 +1,38 @@
+# Node.js Project Template
+# npm ci, lint, test, and build
+
+name: node-project
+description: CI workflow for Node.js/npm projects
+
+steps:
+  - name: install
+    agent: claude-code
+    prompt: |
+      Install dependencies for this Node.js project.
+      Run: npm ci
+      Ensure all dependencies are installed cleanly.
+    output: install-results.md
+
+  - name: lint
+    agent: claude-code
+    prompt: |
+      Run linting on this Node.js project.
+      Execute: npm run lint (or npx eslint . if no lint script)
+      Fix any auto-fixable issues.
+    output: lint-results.md
+
+  - name: test
+    agent: claude-code
+    prompt: |
+      Run the test suite for this Node.js project.
+      Execute: npm test
+      Report test results including pass/fail counts.
+    output: test-results.md
+
+  - name: build
+    agent: claude-code
+    prompt: |
+      Build the Node.js project for production.
+      Run: npm run build
+      Verify the build completes successfully.
+    output: build-results.md

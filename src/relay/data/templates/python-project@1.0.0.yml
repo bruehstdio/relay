@@ -1,0 +1,31 @@
+# Python Project Template
+# Lint, test, and build a Python project
+
+name: python-project
+description: Lint, test, and build a Python project
+
+steps:
+  - name: lint
+    agent: claude-code
+    prompt: |
+      Run linting on this Python project.
+      Check for code style issues, import sorting, and type errors.
+      Fix any issues you find automatically.
+      Use: ruff check . && ruff format . && mypy .
+    output: lint-results.md
+
+  - name: test
+    agent: claude-code
+    prompt: |
+      Run the test suite for this Python project.
+      Execute: pytest -xvs
+      Report the results including pass/fail counts and any errors.
+    output: test-results.md
+
+  - name: build
+    agent: claude-code
+    prompt: |
+      Build the Python project distribution packages.
+      Run: python -m build
+      Verify the build completes successfully and wheels are created.
+    output: build-results.md
