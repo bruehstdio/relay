@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any
 
 from relay.models import PipelineConfig, StepResult
 
@@ -150,15 +149,28 @@ class OutputFormatter:
 
     def _format_markdown(self, result: PipelineResult) -> str:
         """Format result as Markdown summary."""
-        status_icon = "✅" if result.status == "success" else "❌" if result.status == "failed" else "⚠️"
+        if result.status == "success":
+            status_icon = "✅"
+        elif result.status == "failed":
+            status_icon = "❌"
+        else:
+            status_icon = "⚠️"
+
+        passed = sum(1 for s in result.steps if s.success)
+        failed = sum(1 for s in result.steps if not s.success)
+        ts_str = (
+            result.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
+            if result.timestamp
+            else "N/A"
+        )
 
         lines = [
             f"# {result.pipeline} - Pipeline Report",
             "",
             f"**Status:** {status_icon} {result.status.upper()}",
             f"**Duration:** {result.duration:.2f}s",
-            f"**Steps:** {len(result.steps)} total, {sum(1 for s in result.steps if s.success)} passed, {sum(1 for s in result.steps if not s.success)} failed",
-            f"**Timestamp:** {result.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC') if result.timestamp else 'N/A'}",
+            f"**Steps:** {len(result.steps)} total, {passed} passed, {failed} failed",
+            f"**Timestamp:** {ts_str}",
             "",
             "## Steps",
             "",
