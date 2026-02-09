@@ -1,438 +1,322 @@
-# AGENTS.md — AI Agent Development Guide for Relay
+# AGENTS.md - Relay
 
-**Project:** relay-coder — Chain AI coding agents like a CI pipeline  
-**Repository:** https://github.com/danielfbmbot/relay  
-**Maintainers:** Daniel (danielfbm) + AI assistants  
-**Last Updated:** 2026-02-03
+## Repository Overview
 
----
+**Name:** Relay  
+**Type:** CLI Tool - AI Agent Pipeline Orchestrator  
+**Language:** Python 3.9+  
+**Framework:** Typer + Rich  
+**Primary Focus:** Chain AI coding agents like CI/CD pipelines
 
-## 1. Project Overview
+## Quick Links
 
-Relay is a Python CLI tool that chains AI coding agents (Claude Code, OpenCode, Aider, etc.) into pipelines with shared context and artifacts. Think of it as CI/CD for AI agents.
+- **Issues:** https://codeberg.org/daniel-org/relay/issues
+- **Docs:** ./docs/
+- **Source:** `src/relay/`
+- **Tests:** `tests/`
 
-### Architecture
+## Architecture
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   CLI       │────→│   Config    │────→│  Executor   │
-│  (Typer)    │     │  (Pydantic) │     │(ThreadPool) │
-└─────────────┘     └─────────────┘     └──────┬──────┘
-       │                                        │
-       ↓                                        ↓
-┌─────────────┐                         ┌─────────────┐
-│  Dashboard  │                         │   Agents    │
-│  (Rich)     │                         │ (External)  │
-└─────────────┘                         └─────────────┘
+relay/
+├── src/relay/
+│   ├── __init__.py
+│   ├── cli.py              # Main CLI entry point
+│   ├── config.py           # Configuration management
+│   ├── models.py           # Pydantic models
+│   ├── executor.py         # Pipeline execution engine
+│   ├── output_formatter.py # Rich terminal output
+│   ├── conditions.py       # Conditional step logic
+│   └── cache.py            # Artifact caching
+├── tests/
+├── examples/               # Sample pipelines
+└── pipeline.yml            # Example config
 ```
 
-### Key Components
+## Engineering Best Practices
 
-| File | Purpose |
-|------|---------|
-| `cli.py` | Typer CLI commands (run, init, list-agents, monitor) |
-| `config.py` | YAML pipeline parsing and validation |
-| `executor.py` | Pipeline execution engine with parallel step support |
-| `models.py` | Pydantic models for configuration and results |
-| `dashboard.py` | Rich terminal UI for monitoring |
+### Code Style
+- **Python:** PEP 8 compliant
+- **Type Hints:** All functions typed
+- **Docstrings:** Google style
+- **Commits:** Conventional commits
+- **Branches:** `feature/issue-#`, `fix/issue-#`
 
----
-
-## 2. Development Workflow
-
-### Setup Development Environment
+### Worktree Branching Strategy
 
 ```bash
-# Clone and setup
-git clone https://github.com/danielfbmbot/relay.git
-cd relay
+# 1. Setup
+cd ~/code/codeberg.org/daniel-org/relay
+git fetch origin
 
-# Create virtual environment
+# 2. Create worktree
+BRANCH="feature/issue-$(date +%s)"
+git worktree add ../worktrees/relay-$BRANCH -b $BRANCH
+cd ../worktrees/relay-$BRANCH
+
+# 3. Create virtual environment
 python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-
-# Install in editable mode with dev dependencies
+source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Verify installation
-relay --version
-```
-
-### Running Tests
-
-```bash
-# Run all tests
+# 4. Work, test, commit
+# ... coding ...
 pytest
+ruff check .
+mypy src/
 
-# Run with coverage
-pytest --cov=relay --cov-report=html
+# 5. Push and PR
+git push origin $BRANCH
+# Create PR via API
 
-# Run specific test file
-pytest tests/test_executor.py
-
-# Run with verbose output
-pytest -v
+# 6. Cleanup after merge
+cd ~/code/codeberg.org/daniel-org/relay
+git worktree remove ../worktrees/relay-$BRANCH
+git branch -d $BRANCH
 ```
 
-### Code Quality Checks
+### Testing Requirements
 
-**Always run these before committing:**
-
+**Before ANY commit:**
 ```bash
-# Linting (must pass 100 char line length)
-ruff check src/
-
-# Auto-fix linting issues where possible
-ruff check --fix src/
+# Linting
+ruff check .
+ruff format --check
 
 # Type checking
 mypy src/
 
-# Format code
-black src/
-
-# Run full CI check locally
-ruff check src/ && mypy src/ && pytest
-```
-
-### Making Changes
-
-1. **Create a branch** for your changes
-2. **Write tests** for new functionality
-3. **Run quality checks** — all must pass
-4. **Commit with clear messages** explaining why, not just what
-5. **Push and create PR** — CI must pass before merge
-
----
-
-## 3. Coding Standards
-
-### Python Style
-
-- **Line length:** 100 characters (enforced by ruff/black)
-- **Type hints:** Required for all functions (enforced by mypy)
-- **Docstrings:** Google style for all public functions
-- **Imports:** Grouped as stdlib, third-party, local (enforced by ruff)
-
-### Example Code Pattern
-
-```python
-from __future__ import annotations
-
-from pathlib import Path
-from typing import Any
-
-from pydantic import BaseModel, Field
-
-
-def process_step(
-    step: StepConfig,
-    agents: dict[str, AgentConfig],
-    working_dir: Path | None = None,
-) -> StepResult:
-    """Process a single pipeline step.
-    
-    Args:
-        step: Configuration for this step
-        agents: Dictionary of available agent configurations
-        working_dir: Optional working directory override
-        
-    Returns:
-        StepResult with execution status and output
-        
-    Raises:
-        AgentNotFoundError: If step.agent is not in agents dict
-    """
-    # Implementation here
-    pass
-```
-
-### Linting Rules (ruff)
-
-Selected rule sets:
-- **E, F:** Pyflakes and pycodestyle errors
-- **I:** Import sorting
-- **N:** Naming conventions
-- **W:** Warnings
-- **UP:** Python upgrade checks
-
-**Critical:** E501 (line too long) must be fixed — break into multiple lines.
-
----
-
-## 4. Testing Requirements
-
-### Test Structure
-
-```
-tests/
-├── __init__.py
-├── test_cli.py          # CLI command tests
-├── test_config.py       # Configuration parsing tests
-├── test_executor.py     # Pipeline execution tests
-├── test_models.py       # Pydantic model validation tests
-└── fixtures/
-    ├── simple_pipeline.yml
-    └── parallel_pipeline.yml
-```
-
-### Writing Tests
-
-```python
-import pytest
-from relay.models import PipelineConfig, StepConfig
-
-
-def test_pipeline_config_validation():
-    """Test that pipeline config validates required fields."""
-    config = PipelineConfig(
-        name="test-pipeline",
-        steps=[
-            StepConfig(name="step1", agent="claude", prompt="test")
-        ]
-    )
-    assert config.name == "test-pipeline"
-    assert len(config.steps) == 1
-
-
-def test_step_requires_agent_or_parallel():
-    """Test that steps must have either agent or parallel defined."""
-    with pytest.raises(ValueError):
-        StepConfig(name="invalid", prompt="test")  # No agent or parallel
-```
-
-### Test Coverage Requirements
-
-- **Minimum 80% coverage** for new code
-- **100% coverage** for critical paths (executor, config parsing)
-- Use `pytest-cov` to track coverage
-
----
-
-## 5. Adding New Features
-
-### Adding a New CLI Command
-
-1. Edit `src/relay/cli.py`:
-
-```python
-@app.command()
-def new_command(
-    config: Path = typer.Option(..., "--config", "-c", help="Pipeline config file"),
-    verbose: bool = typer.Option(False, "--verbose", "-v"),
-) -> None:
-    """Description of what this command does."""
-    console.print(f"Running new_command with {config}")
-    # Implementation
-```
-
-2. Add tests in `tests/test_cli.py`
-3. Update README.md with usage example
-
-### Adding a New Agent Type
-
-1. Update `src/relay/models.py` agent validation if needed
-2. Add agent configuration example to README
-3. Test with actual agent installation
-
-### Adding Pipeline Features
-
-Example: Adding retry logic
-
-1. Add field to `StepConfig` in `models.py`:
-
-```python
-class StepConfig(BaseModel):
-    # ... existing fields ...
-    max_retries: int = Field(default=0, description="Number of retries on failure")
-```
-
-2. Implement in `executor.py`:
-
-```python
-def _execute_step_with_retry(self, step: StepConfig, ...) -> StepResult:
-    for attempt in range(step.max_retries + 1):
-        result = self._execute_step(...)
-        if result.success or attempt == step.max_retries:
-            return result
-        console.print(f"Retry {attempt + 1}/{step.max_retries}...")
-```
-
-3. Add tests covering retry scenarios
-4. Update example pipelines
-
----
-
-## 6. CI/CD Pipeline
-
-### GitHub Actions Workflow
-
-**File:** `.github/workflows/ci.yml`
-
-**Stages:**
-1. **Test Matrix** — Python 3.9, 3.10, 3.11, 3.12, 3.13 on Ubuntu
-2. **Linting** — ruff check
-3. **Type Checking** — mypy
-4. **Unit Tests** — pytest with coverage
-5. **Build** — Package verification
-
-### Required Checks (Must Pass)
-
-- ✅ ruff linting
-- ✅ mypy type checking
-- ✅ pytest tests
-- ✅ Build verification
-
-### Troubleshooting CI Failures
-
-Common issues:
-
-1. **E501 Line too long** — Break into multiple lines
-2. **F401 Unused import** — Remove or use `# noqa: F401`
-3. **Type errors** — Add proper type hints
-4. **Test failures** — Check test fixtures and mocks
-
----
-
-## 7. Security Considerations
-
-### Code Security
-
-- **Never commit secrets** — Use environment variables
-- **Validate all inputs** — Pydantic handles most, check edge cases
-- **Sandbox agent execution** — Agents run in subprocess, validate commands
-- **Audit logging** — Log all pipeline executions
-
-### Safe Patterns
-
-```python
-# Good: Validate path before use
-from pathlib import Path
-
-def safe_read(path: Path) -> str:
-    resolved = path.expanduser().resolve()
-    # Prevent directory traversal
-    if not str(resolved).startswith(str(Path.cwd())):
-        raise ValueError("Path outside working directory")
-    return resolved.read_text()
-
-# Good: Use Pydantic for validation
-class SafeConfig(BaseModel):
-    command: str = Field(pattern=r"^[a-zA-Z0-9_-]+$")  # Whitelist chars
-```
-
----
-
-## 8. Common Tasks
-
-### Task: Fix Linting Errors
-
-```bash
-# See all errors
-ruff check src/
-
-# Auto-fix what can be fixed
-ruff check --fix src/
-
-# Fix remaining manually (usually line length)
-# Break long lines into multiple shorter lines
-```
-
-### Task: Update Dependencies
-
-```bash
-# Edit pyproject.toml
-# Update version constraints
-
-# Test installation
-pip install -e ".[dev]"
-
-# Run full test suite
+# Tests
 pytest
+
+# Coverage (aim for 70%+)
+pytest --cov=src/relay --cov-report=term-missing
 ```
 
-### Task: Add Parallel Step Support
+### Design Document Template
 
-Already implemented. See `executor.py` `_execute_parallel_step()` for reference.
+For features > 1 day, create `docs/designs/FEATURE-###-short-name.md`:
 
-### Task: Debug Test Failures
+```markdown
+# Feature Design: [Name]
 
-```bash
-# Run single test with verbose output
-pytest tests/test_executor.py::test_parallel_execution -v -s
+## Issue Reference
+Fixes #[issue-number]
 
-# Run with debugger
-pytest --pdb tests/test_executor.py
+## Overview
+Brief description
 
-# Check coverage gaps
-pytest --cov=relay --cov-report=term-missing
+## Requirements
+- [ ] Requirement 1
+- [ ] Requirement 2
+
+## Technical Design
+
+### CLI Changes
+```python
+# New commands or flags
 ```
 
----
+### Core Changes
+```python
+# New classes or functions
+```
 
-## 9. Release Process
+### Configuration Changes
+```yaml
+# New pipeline.yml options
+```
 
-1. **Update version** in `pyproject.toml`
-2. **Update CHANGELOG.md** with changes
-3. **Run full test suite** — all must pass
-4. **Create git tag** — `git tag v0.2.0`
-5. **Push tag** — `git push origin v0.2.0`
-6. **GitHub Actions** — Builds and publishes to PyPI
+## Test Plan
 
----
+### Unit Tests
+- [ ] Test case 1
+- [ ] Test case 2
 
-## 10. Quick Reference
+### Integration Tests
+- [ ] CLI scenario 1
+- [ ] Pipeline execution test
 
-### Essential Commands
+## Implementation Steps
+1. Step 1
+2. Step 2
+3. Step 3
+
+## Documentation Updates
+- [ ] README.md
+- [ ] CLI help text
+- [ ] Example pipelines
+```
+
+## Development Workflow
+
+### 1. Pick Issue
+```bash
+curl -H "Authorization: token $CODEBERG_TOKEN" \
+  "https://codeberg.org/api/v1/repos/daniel-org/relay/issues?labels=priority-high,status-todo"
+```
+
+### 2. Update Status
+```bash
+curl -X POST -H "Authorization: token $CODEBERG_TOKEN" \
+  "https://codeberg.org/api/v1/repos/daniel-org/relay/issues/[number]/labels" \
+  -d '{"labels":["status-in-progress"]}'
+```
+
+### 3. Create Design Doc (if > 1 day effort)
+
+### 4. Implement with TDD
+```bash
+# Write test first
+# Then implementation
+# Then verify
+pytest tests/test_[feature].py -v
+```
+
+### 5. Full Test Suite
+```bash
+# Run all checks
+just check  # or: ruff check . && mypy src/ && pytest
+```
+
+### 6. Commit
+```bash
+git commit -m "feat: description - fixes #[number]
+
+- Change 1
+- Change 2
+
+Test plan:
+- [x] Unit tests added
+- [x] Integration tests pass
+- [x] Type checking passes
+- [x] Linting clean"
+```
+
+### 7. Create PR
+```bash
+git push origin [branch-name]
+
+# Create PR
+curl -X POST -H "Authorization: token $CODEBERG_TOKEN" \
+  "https://codeberg.org/api/v1/repos/daniel-org/relay/pulls" \
+  -d '{
+    "title": "feat: description - fixes #[number]",
+    "body": "## Summary\n...\n\n## Testing\n- [x] Tests pass\n- [x] Coverage maintained\n- [x] Type check clean\n\nFixes #[number]",
+    "head": "[branch-name]",
+    "base": "main"
+  }'
+```
+
+## Current Priority Issues
+
+1. **#8:** Increase test coverage to 70% → 3-5 days
+2. **#9:** Create documentation site → 2-3 days
+3. **#10:** Publish to PyPI → 1 day
+
+## Common Commands
 
 ```bash
-# Development setup
+# Install in development mode
 pip install -e ".[dev]"
-
-# Quality checks (run before every commit)
-ruff check src/ && mypy src/ && pytest
 
 # Run CLI
-relay run --config pipeline.yml
+relay --help
+relay run pipeline.yml
 relay monitor
 
-# Build package
-python -m build
+# Testing
+pytest
+pytest -xvs tests/test_specific.py
+pytest --cov=src/relay --cov-report=html
+
+# Linting
+ruff check .
+ruff check --fix .
+ruff format .
+
+# Type checking
+mypy src/
+
+# Using Just
+just check      # Run all checks
+just test       # Run tests
+just lint       # Run linter
+just format     # Format code
 ```
 
-### Project Links
+## Pipeline Configuration Format
 
-- **Issues:** https://github.com/danielfbmbot/relay/issues
-- **CI Status:** https://github.com/danielfbmbot/relay/actions
-- **Documentation:** README.md (this file)
+```yaml
+# pipeline.yml
+name: Example Pipeline
 
-### Getting Help
+steps:
+  - name: analyze
+    agent: claude
+    prompt: Analyze the codebase for issues
+    
+  - name: fix
+    agent: aider
+    prompt: Fix the identified issues
+    depends_on: [analyze]
+    
+  - name: test
+    command: pytest
+    depends_on: [fix]
+```
 
-- Check existing issues on GitHub
-- Review recent commits for patterns
-- Ask Daniel (danielfbm) for context
+## Agent Integration
+
+Supported agents:
+- `claude` - Claude Code
+- `aider` - Aider coding assistant
+- `codex` - OpenAI Codex CLI
+- `gemini` - Gemini CLI
+
+Adding new agents:
+1. Add to `src/relay/models.py`
+2. Implement in `src/relay/executor.py`
+3. Add tests
+4. Update README
+
+## Release Process
+
+1. Update version in `pyproject.toml`
+2. Update CHANGELOG.md
+3. Create git tag: `git tag v0.x.x`
+4. Push tag: `git push origin v0.x.x`
+5. CI publishes to PyPI automatically
+
+## Troubleshooting
+
+**Import errors:**
+```bash
+pip install -e ".[dev]"
+```
+
+**Test failures:**
+```bash
+# Run specific test
+pytest tests/test_file.py::test_function -xvs
+```
+
+**Type errors:**
+```bash
+mypy src/ --show-error-codes
+```
+
+## Performance Considerations
+
+- Pipeline steps run in isolated processes
+- Artifact caching reduces redundant work
+- Parallel execution for independent steps
+- Progress displayed via Rich library
+
+## Contact
+
+For questions, contact Daniel via Telegram.
 
 ---
 
-## 11. AI Agent Instructions
-
-When working on this codebase:
-
-1. **Always run quality checks** before suggesting changes
-2. **Write tests** for new functionality
-3. **Keep line length ≤ 100** — break long lines
-4. **Use type hints** for all functions
-5. **Follow existing patterns** — consistency matters
-6. **Commit frequently** with clear messages
-7. **Check CI status** after pushing
-
-**Before marking any task complete:**
-- [ ] Code follows style guidelines (ruff passes)
-- [ ] Type hints are correct (mypy passes)
-- [ ] Tests pass (pytest passes)
-- [ ] New features have tests
-- [ ] Documentation is updated if needed
-
----
-
-*This file should be kept up-to-date as the project evolves.*
+*Last updated: February 8, 2026*
