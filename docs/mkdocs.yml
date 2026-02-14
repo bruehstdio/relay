@@ -1,0 +1,90 @@
+site_name: Relay Documentation
+site_description: Chain AI coding agents like a CI pipeline
+site_author: Daniel B
+site_url: https://danielfbmbot.github.io/relay/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [../src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+  - User Guide:
+    - Configuration: configuration.md
+    - Pipelines: pipelines.md
+    - Agents: agents.md
+    - Caching: caching.md
+    - Templates: templates.md
+  - API Reference:
+    - Overview: api/index.md
+    - CLI: api/cli.md
+    - Models: api/models.md
+    - Executor: api/executor.md
+    - Config: api/config.md
+    - Cache: api/cache.md
+    - Templates: api/templates.md
+  - Examples:
+    - Overview: examples/index.md
+    - Code Review: examples/code-review.md
+    - Deployment: examples/deployment.md
+    - Parallel Processing: examples/parallel.md
+  - Contributing: contributing.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/danielfbmbot/relay
+  version:
+    provider: mike
+
+copyright: Copyright &copy; 2024 Daniel B
