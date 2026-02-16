@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 from rich.console import Console
@@ -28,11 +28,11 @@ console = Console()
 @app.command()
 def run(
     config: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--config", "-c", help="Pipeline configuration file"),
     ] = None,
     working_dir: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--working-dir", "-w", help="Working directory"),
     ] = None,
     dry_run: Annotated[
@@ -44,7 +44,7 @@ def run(
         typer.Option("--format", "-f", help="Output format"),
     ] = OutputFormat.CONSOLE,
     output: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--output", "-o", help="Output file path"),
     ] = None,
     log_level: Annotated[
@@ -219,11 +219,11 @@ def list_agents() -> None:
 @app.command()
 def monitor(
     config: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--config", "-c", help="Pipeline to monitor (optional)"),
     ] = None,
     working_dir: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--working-dir", "-w", help="Working directory"),
     ] = None,
 ) -> None:
@@ -259,7 +259,7 @@ def _show_dry_run(pipeline: PipelineConfig, agents: dict[str, AgentConfig]) -> N
 @app.command()
 def visualize(
     config: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--config", "-c", help="Pipeline configuration file"),
     ] = None,
 ) -> None:
@@ -354,7 +354,7 @@ app.add_typer(cache_app, name="cache")
 @cache_app.command("list")
 def cache_list(
     working_dir: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--working-dir", "-w", help="Working directory"),
     ] = None,
 ) -> None:
@@ -395,7 +395,7 @@ def cache_list(
 @cache_app.command("clear")
 def cache_clear(
     working_dir: Annotated[
-        Path | None,
+        Optional[Path],
         typer.Option("--working-dir", "-w", help="Working directory"),
     ] = None,
     yes: Annotated[
