@@ -102,6 +102,7 @@ class RelayLogger:
         handler.setLevel(self._parse_level(level))
 
         # Set formatter based on mode
+        formatter: logging.Formatter
         if json_format:
             formatter = JsonFormatter()
         else:

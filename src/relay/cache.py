@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from relay.models import CacheConfig
@@ -37,7 +37,7 @@ class CacheEntry:
     path: str  # Storage path/key
     size: int
     created_at: float
-    metadata: dict[str, str]
+    metadata: dict[str, Any]
 
 
 class CacheBackend(ABC):
@@ -88,13 +88,13 @@ class LocalFilesystemBackend(CacheBackend):
         safe_key = re.sub(r'[^a-zA-Z0-9_-]', '_', key)
         return self.cache_dir / f"{safe_key}.tar.gz"
 
-    def _load_metadata(self) -> dict[str, dict]:
+    def _load_metadata(self) -> dict[str, dict[str, Any]]:
         """Load cache metadata."""
         if self.metadata_file.exists():
-            return json.loads(self.metadata_file.read_text())
+            return json.loads(self.metadata_file.read_text())  # type: ignore[no-any-return]
         return {}
 
-    def _save_metadata(self, metadata: dict[str, dict]) -> None:
+    def _save_metadata(self, metadata: dict[str, dict[str, Any]]) -> None:
         """Save cache metadata."""
         self.metadata_file.write_text(json.dumps(metadata, indent=2))
 
@@ -229,8 +229,8 @@ class S3Backend(CacheBackend):
 
         # Try to import boto3
         try:
-            import boto3
-            from botocore.config import Config
+            import boto3  # type: ignore[import-not-found]
+            from botocore.config import Config  # type: ignore[import-not-found]
 
             self._boto3 = boto3
             self._Config = Config
@@ -264,17 +264,17 @@ class S3Backend(CacheBackend):
         """Get the S3 metadata object key."""
         return f"{self.prefix}metadata.json"
 
-    def _load_metadata(self) -> dict[str, dict]:
+    def _load_metadata(self) -> dict[str, dict[str, Any]]:
         """Load cache metadata from S3."""
         try:
             response = self.s3.get_object(
                 Bucket=self.bucket, Key=self._get_metadata_key()
             )
-            return json.loads(response["Body"].read().decode("utf-8"))
+            return json.loads(response["Body"].read().decode("utf-8"))  # type: ignore[no-any-return]
         except Exception:
             return {}
 
-    def _save_metadata(self, metadata: dict[str, dict]) -> None:
+    def _save_metadata(self, metadata: dict[str, dict[str, Any]]) -> None:
         """Save cache metadata to S3."""
         self.s3.put_object(
             Bucket=self.bucket,

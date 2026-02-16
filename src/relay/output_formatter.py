@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
+from typing import Callable
 
 from relay.models import PipelineConfig, StepResult
 
@@ -63,9 +64,9 @@ class OutputFormatter:
 
         return output
 
-    def _get_formatter(self, format_type: OutputFormat) -> callable:
+    def _get_formatter(self, format_type: OutputFormat) -> Callable[[PipelineResult], str]:
         """Get the formatter function for the given format type."""
-        formatters = {
+        formatters: dict[OutputFormat, Callable[[PipelineResult], str]] = {
             OutputFormat.CONSOLE: self._format_console,
             OutputFormat.JSON: self._format_json,
             OutputFormat.JUNIT: self._format_junit,
@@ -226,8 +227,8 @@ class OutputFormatter:
                 elem.tail = i
             for child in elem:
                 self._indent_xml(child, level + 1)
-            if not child.tail or not child.tail.strip():  # type: ignore
-                child.tail = i  # type: ignore
+            if not child.tail or not child.tail.strip():
+                child.tail = i
         else:
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = i
