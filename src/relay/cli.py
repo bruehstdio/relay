@@ -102,7 +102,7 @@ def run(
 def init(
     name: Annotated[str, typer.Argument(help="Project name")] = "my-pipeline",
     template: Annotated[
-        str | None,
+        Optional[str],
         typer.Option("--template", "-t", help="Template to use (e.g., python-project)"),
     ] = None,
 ) -> None:

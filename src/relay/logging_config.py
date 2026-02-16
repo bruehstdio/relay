@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 from enum import Enum
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 
 class LogLevel(str, Enum):
@@ -69,8 +69,8 @@ class JsonFormatter(logging.Formatter):
 class RelayLogger:
     """Structured logger for Relay operations."""
 
-    _instance: RelayLogger | None = None
-    _logger: logging.Logger | None = None
+    _instance: Optional[RelayLogger] = None
+    _logger: Optional[logging.Logger] = None
     _json_mode: bool = False
 
     def __new__(cls) -> RelayLogger:
@@ -173,8 +173,8 @@ def get_logger() -> RelayLogger:
 
 
 def setup_logging(
-    level: Union[LogLevel, str] | None = None,
-    json_format: bool | None = None,
+    level: Optional[Union[LogLevel, str]] = None,
+    json_format: Optional[bool] = None,
 ) -> RelayLogger:
     """Setup logging with configuration.
 

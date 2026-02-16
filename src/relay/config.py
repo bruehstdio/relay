@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 
@@ -57,7 +57,7 @@ def load_pipeline(path: Path) -> PipelineConfig:
     return PipelineConfig.model_validate(data)
 
 
-def find_config_file() -> Path | None:
+def find_config_file() -> Optional[Path]:
     """Find a relay configuration file in the current directory or parents."""
     names = ["relay.yml", "relay.yaml", ".relay.yml", ".relay.yaml"]
 
