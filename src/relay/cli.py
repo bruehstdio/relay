@@ -100,7 +100,7 @@ def run(
 
 @app.command()
 def init(
-    name: Annotated[str, typer.Argument(help="Project name")] = "my-pipeline",
+    name: str = typer.Argument(default="my-pipeline", help="Project name"),
     template: Annotated[
         Optional[str],
         typer.Option("--template", "-t", help="Template to use (e.g., python-project)"),
