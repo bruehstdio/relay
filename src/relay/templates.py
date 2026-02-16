@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 
@@ -27,7 +27,7 @@ class TemplateVersionError(Exception):
     pass
 
 
-def _parse_template_ref(template_ref: str) -> tuple[str, str | None]:
+def _parse_template_ref(template_ref: str) -> tuple[str, Optional[str]]:
     """Parse a template reference like 'python-project@1.0.0'.
 
     Returns tuple of (name, version). Version is None if not specified.
@@ -43,8 +43,8 @@ class TemplateManager:
 
     def __init__(
         self,
-        user_dir: Path | None = None,
-        builtin_dir: Path | None = None,
+        user_dir: Optional[Path] = None,
+        builtin_dir: Optional[Path] = None,
     ) -> None:
         """Initialize template manager.
 
@@ -55,7 +55,7 @@ class TemplateManager:
         self.user_dir = user_dir or USER_TEMPLATES_DIR
         self.builtin_dir = builtin_dir or DEFAULT_TEMPLATES_DIR
 
-    def _find_template_file(self, name: str, version: str | None = None) -> Path | None:
+    def _find_template_file(self, name: str, version: Optional[str] = None) -> Optional[Path]:
         """Find a template file by name and optional version.
 
         Checks user directory first, then built-in directory.

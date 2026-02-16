@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from rich.console import Console
 from rich.layout import Layout
@@ -105,7 +105,7 @@ def make_footer() -> Panel:
     )
 
 
-def run_dashboard(config: RelayConfig, working_dir: Path | None = None) -> None:
+def run_dashboard(config: RelayConfig, working_dir: Optional[Path] = None) -> None:
     """Run the terminal dashboard."""
     working_dir = working_dir or Path.cwd()
     artifacts_dir = working_dir / ".relay" / "artifacts"

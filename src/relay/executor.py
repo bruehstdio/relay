@@ -7,6 +7,7 @@ import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Optional
 
 from rich.console import Console
 from rich.panel import Panel
@@ -22,7 +23,7 @@ console = Console()
 class PipelineExecutor:
     """Executes pipelines with multiple agent steps."""
 
-    def __init__(self, working_dir: Path | None = None) -> None:
+    def __init__(self, working_dir: Optional[Path] = None) -> None:
         self.working_dir = working_dir or Path.cwd()
         self.artifacts_dir = self.working_dir / ".relay" / "artifacts"
         self.artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -37,7 +38,7 @@ class PipelineExecutor:
             console.print(f"[dim]{config.description}[/dim]\n")
 
         self.results = []
-        previous_output: Path | None = None
+        previous_output: Optional[Path] = None
 
         for i, step in enumerate(config.steps, 1):
             result = self._execute_step(i, step, agents, previous_output)
@@ -58,7 +59,7 @@ class PipelineExecutor:
         step_num: int,
         step: StepConfig,
         agents: dict[str, AgentConfig],
-        previous_output: Path | None,
+        previous_output: Optional[Path],
     ) -> StepResult:
         """Execute a single pipeline step (sequential or parallel)."""
         # Handle parallel steps
@@ -118,7 +119,7 @@ class PipelineExecutor:
         step_num: int,
         step: StepConfig,
         agents: dict[str, AgentConfig],
-        previous_output: Path | None,
+        previous_output: Optional[Path],
     ) -> StepResult:
         """Execute parallel sub-steps concurrently."""
         import time
@@ -287,7 +288,7 @@ class PipelineExecutor:
                 parts.append("")
             return "\n".join(parts)
 
-    def _prepare_prompt(self, step: StepConfig, previous_output: Path | None) -> str:
+    def _prepare_prompt(self, step: StepConfig, previous_output: Optional[Path]) -> str:
         """Prepare the prompt for a step, including context from previous steps."""
         prompt = step.prompt or ""
 

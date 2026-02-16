@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 from enum import Enum
-from typing import Any
+from typing import Any, Union
 
 
 class LogLevel(str, Enum):
@@ -81,7 +81,7 @@ class RelayLogger:
 
     def setup(
         self,
-        level: LogLevel | str = LogLevel.INFO,
+        level: Union[LogLevel, str] = LogLevel.INFO,
         json_format: bool = False,
     ) -> None:
         """Setup the logger configuration.
@@ -114,7 +114,7 @@ class RelayLogger:
         handler.setFormatter(formatter)
         self._logger.addHandler(handler)
 
-    def _parse_level(self, level: LogLevel | str) -> int:
+    def _parse_level(self, level: Union[LogLevel, str]) -> int:
         """Parse log level string to logging constant."""
         level_map = {
             "DEBUG": logging.DEBUG,
@@ -173,7 +173,7 @@ def get_logger() -> RelayLogger:
 
 
 def setup_logging(
-    level: LogLevel | str | None = None,
+    level: Union[LogLevel, str] | None = None,
     json_format: bool | None = None,
 ) -> RelayLogger:
     """Setup logging with configuration.

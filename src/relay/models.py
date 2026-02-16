@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from enum import Enum
 from pathlib import Path
-from typing import Any  # noqa: F401
+from typing import Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -17,7 +17,7 @@ class BackoffStrategy(str, Enum):
     EXPONENTIAL = "exponential"
 
 
-def _parse_duration(duration: str | int) -> int:
+def _parse_duration(duration: Union[str, int]) -> int:
     """Parse a duration string (e.g., '5s', '10m', '1h') to seconds.
 
     If already an integer, return as-is.
@@ -43,8 +43,8 @@ class RetryConfig(BaseModel):
     backoff: BackoffStrategy = Field(
         default=BackoffStrategy.EXPONENTIAL, description="Backoff strategy: linear or exponential"
     )
-    delay: str | int = Field(default="5s", description="Initial delay between retries")
-    max_delay: str | int = Field(default="60s", description="Maximum delay between retries")
+    delay: Union[str, int] = Field(default="5s", description="Initial delay between retries")
+    max_delay: Union[str, int] = Field(default="60s", description="Maximum delay between retries")
 
     @property
     def delay_seconds(self) -> int:
@@ -96,27 +96,27 @@ class CacheConfig(BaseModel):
         default="local",
         description="Cache backend: local or s3",
     )
-    local_path: Path | None = Field(
+    local_path: Optional[Path] = Field(
         default=None,
         description="Local cache directory (default: ~/.relay/cache)",
     )
-    s3_bucket: str | None = Field(
+    s3_bucket: Optional[str] = Field(
         default=None,
         description="S3 bucket name",
     )
-    s3_endpoint: str | None = Field(
+    s3_endpoint: Optional[str] = Field(
         default=None,
         description="S3 endpoint URL (for MinIO)",
     )
-    s3_region: str | None = Field(
+    s3_region: Optional[str] = Field(
         default=None,
         description="S3 region",
     )
-    s3_access_key: str | None = Field(
+    s3_access_key: Optional[str] = Field(
         default=None,
         description="S3 access key",
     )
-    s3_secret_key: str | None = Field(
+    s3_secret_key: Optional[str] = Field(
         default=None,
         description="S3 secret key",
     )
@@ -141,7 +141,7 @@ class ParallelStepConfig(BaseModel):
     name: str = Field(description="Unique name for this parallel step")
     agent: str = Field(description="Agent to use")
     prompt: str = Field(description="Prompt/instructions")
-    output: str | None = Field(default=None, description="Output file")
+    output: Optional[str] = Field(default=None, description="Output file")
 
 
 class StepConfig(BaseModel):
@@ -150,16 +150,18 @@ class StepConfig(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     name: str = Field(description="Unique name for this step")
-    agent: str | None = Field(default=None, description="Agent to use (refers to agents config)")
-    prompt: str | None = Field(default=None, description="Prompt/instructions for the agent")
-    input: str | None = Field(default=None, description="Input file from previous step")
-    output: str | None = Field(default=None, description="Output file to save")
-    working_dir: Path | None = Field(default=None, description="Working directory for this step")
+    agent: Optional[str] = Field(default=None, description="Agent to use (refers to agents config)")
+    prompt: Optional[str] = Field(default=None, description="Prompt/instructions for the agent")
+    input: Optional[str] = Field(default=None, description="Input file from previous step")
+    output: Optional[str] = Field(default=None, description="Output file to save")
+    working_dir: Optional[Path] = Field(default=None, description="Working directory for this step")
     continue_on_error: bool = Field(default=False, description="Continue if this step fails")
     on_error: ErrorMode = Field(default=ErrorMode.FAIL, description="Error handling mode")
-    retry: RetryConfig | None = Field(default=None, description="Retry configuration")
-    timeout: str | int | None = Field(default=None, description="Step timeout (e.g., '10m', '60s')")
-    parallel: list[ParallelStepConfig] | None = Field(
+    retry: Optional[RetryConfig] = Field(default=None, description="Retry configuration")
+    timeout: Optional[Union[str, int]] = Field(
+        default=None, description="Step timeout (e.g., '10m', '60s')"
+    )
+    parallel: Optional[list[ParallelStepConfig]] = Field(
         default=None, description="Parallel sub-steps"
     )
     parallel_strategy: str = Field(
@@ -168,24 +170,24 @@ class StepConfig(BaseModel):
     needs: list[str] = Field(
         default_factory=list, description="List of step names this step depends on"
     )
-    if_: str | None = Field(
+    if_: Optional[str] = Field(
         default=None,
         validation_alias="if",
         description="Condition to evaluate before running this step",
     )
-    cache: StepCacheConfig | None = Field(
+    cache: Optional[StepCacheConfig] = Field(
         default=None, description="Cache configuration for this step"
     )
 
     @field_validator("working_dir")
     @classmethod
-    def validate_working_dir(cls, v: Path | None) -> Path | None:
+    def validate_working_dir(cls, v: Optional[Path]) -> Optional[Path]:
         if v is not None:
             return v.expanduser().resolve()
         return v
 
     @property
-    def timeout_seconds(self) -> int | None:
+    def timeout_seconds(self) -> Optional[int]:
         """Get timeout in seconds."""
         if self.timeout is None:
             return None
@@ -200,12 +202,12 @@ class PipelineConfig(BaseModel):
     """Configuration for a pipeline."""
 
     name: str = Field(description="Pipeline name")
-    description: str | None = Field(default=None, description="Pipeline description")
-    template: str | None = Field(
+    description: Optional[str] = Field(default=None, description="Pipeline description")
+    template: Optional[str] = Field(
         default=None, description="Template reference (e.g., 'python-project@1.0.0')"
     )
     steps: list[StepConfig] = Field(description="Steps to execute")
-    cache: CacheConfig | None = Field(
+    cache: Optional[CacheConfig] = Field(
         default=None, description="Cache configuration for this pipeline"
     )
 
@@ -261,7 +263,7 @@ class StepErrorDetails(BaseModel):
 
     message: str = Field(description="Error message")
     stderr: str = Field(default="", description="Standard error output")
-    returncode: int | None = Field(default=None, description="Command return code")
+    returncode: Optional[int] = Field(default=None, description="Command return code")
     suggestion: str = Field(default="", description="Actionable suggestion for fixing the error")
 
 
@@ -271,8 +273,8 @@ class StepResult(BaseModel):
     step_name: str
     success: bool
     output: str = ""
-    error: str | None = None
-    error_details: StepErrorDetails | None = None
+    error: Optional[str] = None
+    error_details: Optional[StepErrorDetails] = None
     duration_ms: int = 0
     artifacts: list[Path] = Field(default_factory=list)
     attempts: int = Field(default=1, description="Number of attempts made")

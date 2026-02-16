@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from relay.models import CacheConfig
@@ -77,7 +77,7 @@ class CacheBackend(ABC):
 class LocalFilesystemBackend(CacheBackend):
     """Local filesystem cache backend."""
 
-    def __init__(self, cache_dir: Path | None = None) -> None:
+    def __init__(self, cache_dir: Optional[Path] = None) -> None:
         self.cache_dir = cache_dir or Path.home() / ".relay" / "cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.metadata_file = self.cache_dir / "metadata.json"
@@ -214,10 +214,10 @@ class S3Backend(CacheBackend):
     def __init__(
         self,
         bucket: str,
-        endpoint: str | None = None,
-        region: str | None = None,
-        access_key: str | None = None,
-        secret_key: str | None = None,
+        endpoint: Optional[str] = None,
+        region: Optional[str] = None,
+        access_key: Optional[str] = None,
+        secret_key: Optional[str] = None,
         prefix: str = "relay-cache/",
     ) -> None:
         self.bucket = bucket
@@ -430,7 +430,7 @@ class S3Backend(CacheBackend):
 class CacheKeyResolver:
     """Resolves cache keys with template variables."""
 
-    def __init__(self, working_dir: Path, env: dict[str, str] | None = None) -> None:
+    def __init__(self, working_dir: Path, env: Optional[dict[str, str]] = None) -> None:
         self.working_dir = working_dir
         self.env = env or dict(os.environ)
 
@@ -479,8 +479,8 @@ class CacheManager:
 
     def __init__(
         self,
-        backend: CacheBackend | None = None,
-        working_dir: Path | None = None,
+        backend: Optional[CacheBackend] = None,
+        working_dir: Optional[Path] = None,
     ) -> None:
         self.backend = backend or LocalFilesystemBackend()
         self.working_dir = working_dir or Path.cwd()
@@ -489,8 +489,8 @@ class CacheManager:
     @classmethod
     def from_config(
         cls,
-        cache_config: CacheConfig | None,
-        working_dir: Path | None = None,
+        cache_config: Optional[CacheConfig],
+        working_dir: Optional[Path] = None,
     ) -> CacheManager:
         """Create a CacheManager from configuration."""
         if cache_config is None:
@@ -539,7 +539,7 @@ class CacheManager:
         self,
         key_template: str,
         paths: list[str],
-    ) -> tuple[bool, str, CacheEntry | None]:
+    ) -> tuple[bool, str, Optional[CacheEntry]]:
         """Save paths to cache.
 
         Returns (success, resolved_key, entry)

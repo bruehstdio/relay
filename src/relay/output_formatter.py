@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 from relay.models import PipelineConfig, StepResult
 
@@ -30,7 +30,7 @@ class PipelineResult:
     status: str  # success, failed, partial
     duration: float  # seconds
     steps: list[StepResult]
-    timestamp: datetime | None = None
+    timestamp: Optional[datetime] = None
 
     def __post_init__(self) -> None:
         if self.timestamp is None:
@@ -44,7 +44,7 @@ class OutputFormatter:
         self,
         result: PipelineResult,
         format_type: OutputFormat,
-        output_path: Path | None = None,
+        output_path: Optional[Path] = None,
     ) -> str:
         """Format pipeline result in the specified format.
 
