@@ -1,7 +1,9 @@
 """Tests for Relay template system."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 import yaml
@@ -59,7 +61,7 @@ class TestTemplateManager:
         self,
         directory: Path,
         name: str,
-        version: str | None,
+        version: Optional[str],
         data: dict[str, Any],
     ) -> Path:
         """Helper to create a template file."""
