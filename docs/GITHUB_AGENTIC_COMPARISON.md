@@ -237,12 +237,21 @@ GitHub PR (final submission)
 - Enhanced agent awareness in Projects
 - Improved local development support
 
-### Relay Opportunities
-- GitHub Actions integration (trigger from PRs)
-- IDE extensions (VS Code plugin)
-- Web dashboard (remote monitoring)
+### Relay Opportunities (Now Tracked as Issues)
+
+| Opportunity | Issue | Priority |
+|-------------|-------|----------|
+| **GitHub Actions integration** | [#2](https://github.com/bruehstdio/relay/issues/2) | High - Closes gap with GitHub CI/CD |
+| **VS Code Extension** | [#3](https://github.com/bruehstdio/relay/issues/3) | High - Matches Copilot IDE experience |
+| **Web Dashboard** | [#4](https://github.com/bruehstdio/relay/issues/4) | Medium - Enables remote/team workflows |
+| **Security Autofix** | [#5](https://github.com/bruehstdio/relay/issues/5) | Medium - Matches GitHub code scanning |
+| **Template Marketplace** | [#6](https://github.com/bruehstdio/relay/issues/6) | Medium - Ecosystem growth like Actions |
+
+**Additional opportunities:**
 - More built-in templates
-- Integration with code scanning tools
+- Integration with additional code scanning tools
+- Mobile app for dashboard
+- Enterprise features (SSO, audit logs)
 
 ---
 
@@ -251,14 +260,15 @@ GitHub PR (final submission)
 ### For Relay Project
 
 **Short-term:**
-- [ ] Create GitHub Action to trigger Relay pipelines from PRs
+- [ ] [#2: Create GitHub Action to trigger Relay pipelines](https://github.com/bruehstdio/relay/issues/2)
 - [ ] Add example: GitHub issue → Relay → GitHub PR workflow
 - [ ] Document hybrid approaches in README
 
 **Long-term:**
-- [ ] VS Code extension for IDE integration
-- [ ] Web dashboard for remote pipeline monitoring
-- [ ] Native security scanning integration
+- [ ] [#3: VS Code extension for IDE integration](https://github.com/bruehstdio/relay/issues/3)
+- [ ] [#4: Web dashboard for remote pipeline monitoring](https://github.com/bruehstdio/relay/issues/4)
+- [ ] [#5: Native security scanning integration](https://github.com/bruehstdio/relay/issues/5)
+- [ ] [#6: Template Marketplace for community sharing](https://github.com/bruehstdio/relay/issues/6)
 
 ### For Users
 
