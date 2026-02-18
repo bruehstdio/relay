@@ -63,8 +63,9 @@ nav:
     - Configuration: configuration.md
     - Pipelines: pipelines.md
     - Agents: agents.md
-    - Caching: caching.md
     - Templates: templates.md
+    - Caching: caching.md
+    - CLI Reference: cli-reference.md
   - API Reference:
     - Overview: api/index.md
     - CLI: api/cli.md
@@ -75,6 +76,9 @@ nav:
     - Templates: api/templates.md
   - Examples:
     - Overview: examples/index.md
+    - Basic Pipeline: examples/basic-pipeline.md
+    - Multi-Agent Pipeline: examples/multi-agent.md
+    - GitHub Integration: examples/github-integration.md
     - Code Review: examples/code-review.md
     - Deployment: examples/deployment.md
     - Parallel Processing: examples/parallel.md

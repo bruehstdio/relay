@@ -46,3 +46,6 @@ htmlcov/
 # Misc
 .DS_Store
 *.bak
+
+# Documentation build output
+docs/site/

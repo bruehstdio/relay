@@ -4,6 +4,33 @@ This section contains practical examples of using Relay for various workflows.
 
 ## Available Examples
 
+### [Basic Pipeline](basic-pipeline.md)
+
+A simple three-step pipeline perfect for getting started:
+
+- Codebase analysis
+- Implementation planning
+- Code generation
+
+### [Multi-Agent Pipeline](multi-agent.md)
+
+Demonstrates chaining multiple AI agents together:
+
+- Architecture design (Claude Code)
+- Database schema (OpenCode)
+- Backend implementation (Aider)
+- Frontend development (OpenCode)
+- Testing (Codex)
+- Review (Claude Code)
+
+### [GitHub Integration](github-integration.md)
+
+Automate GitHub workflows:
+
+- Issue analysis to PR creation
+- Automated code review
+- Release note generation
+
 ### [Code Review Pipeline](code-review.md)
 
 A comprehensive code review pipeline that runs multiple checks in parallel:
