@@ -1,7 +1,7 @@
 # Relay
 
-[![CI](https://github.com/danielfbmbot/relay/actions/workflows/ci.yml/badge.svg)](https://github.com/danielfbmbot/relay/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/danielfbmbot/relay/branch/main/graph/badge.svg)](https://codecov.io/gh/danielfbmbot/relay)
+[![CI](https://github.com/bruehstdio/relay/actions/workflows/ci.yml/badge.svg)](https://github.com/bruehstdio/relay/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/bruehstdio/relay/branch/main/graph/badge.svg)](https://codecov.io/gh/bruehstdio/relay)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://bruehstdio.github.io/relay/)
@@ -31,9 +31,13 @@ Instead of picking one, chain them together. Each agent gets the output of the p
 
 ## Quick Start
 
+> **Note: PyPI package coming soon. Install from source for now.**
+
 ```bash
-# Install Relay
-pip install relay-coder
+# Install Relay from source
+git clone https://github.com/bruehstdio/relay.git
+cd relay
+pip install -e ".[dev]"
 
 # Initialize a new project
 mkdir my-project && cd my-project
@@ -88,16 +92,22 @@ steps:
 - Python 3.9 or higher
 - At least one AI agent installed (Claude Code, OpenCode, Aider, or Codex)
 
-### Install from PyPI
+<!-- ### Install from PyPI
+
+> **Note: PyPI package coming soon.**
 
 ```bash
 pip install relay-coder
 ```
 
+### Install from Source -->
+
+> **Note: PyPI package coming soon. Install from source for now.**
+
 ### Install from Source
 
 ```bash
-git clone https://github.com/danielfbmbot/relay.git
+git clone https://github.com/bruehstdio/relay.git
 cd relay
 pip install -e ".[dev]"
 ```
@@ -127,7 +137,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ```bash
 # Clone and setup
-git clone https://github.com/danielfbmbot/relay.git
+git clone https://github.com/bruehstdio/relay.git
 cd relay
 python -m venv .venv
 source .venv/bin/activate

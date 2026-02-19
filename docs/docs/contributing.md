@@ -7,7 +7,7 @@ Thank you for your interest in contributing to Relay!
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/danielfbmbot/relay.git
+git clone https://github.com/bruehstdio/relay.git
 cd relay
 ```
 

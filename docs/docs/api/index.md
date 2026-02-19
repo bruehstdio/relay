@@ -36,9 +36,17 @@ for result in results:
 
 ## Installation for API Use
 
+> **Note: PyPI package coming soon. Install from source for now.**
+
 ```bash
-pip install relay-coder
+git clone https://github.com/bruehstdio/relay.git
+cd relay
+pip install -e ".[dev]"
 ```
+
+<!-- ```bash
+pip install relay-coder
+``` -->
 
 ## Type Safety
 

@@ -1,7 +1,7 @@
 site_name: Relay Documentation
 site_description: Chain AI coding agents like a CI pipeline
 site_author: Daniel B
-site_url: https://danielfbmbot.github.io/relay/
+site_url: https://bruehstdio.github.io/relay/
 
 theme:
   name: material
@@ -87,7 +87,7 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/danielfbmbot/relay
+      link: https://github.com/bruehstdio/relay
   version:
     provider: mike
 

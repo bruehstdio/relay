@@ -188,7 +188,7 @@ relay/
 
 ## Questions?
 
-- Check existing [issues](https://github.com/danielfbmbot/relay/issues)
+- Check existing [issues](https://github.com/bruehstdio/relay/issues)
 - Review `AGENTS.md` for detailed development patterns
 - Ask in your pull request or issue
 

@@ -5,16 +5,22 @@
 - Python 3.9 or higher
 - At least one AI agent installed (Claude Code, OpenCode, Aider, or Codex)
 
-## Install from PyPI
+<!-- ## Install from PyPI
+
+> **Note: PyPI package coming soon.**
 
 ```bash
 pip install relay-coder
 ```
 
+## Install from Source -->
+
+> **Note: PyPI package coming soon. Install from source for now.**
+
 ## Install from Source
 
 ```bash
-git clone https://github.com/danielfbmbot/relay.git
+git clone https://github.com/bruehstdio/relay.git
 cd relay
 pip install -e ".[dev]"
 ```

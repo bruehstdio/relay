@@ -2,6 +2,13 @@
 
 This guide will walk you through creating your first Relay pipeline.
 
+> **Note: PyPI package coming soon. For now, install from source:**
+> ```bash
+> git clone https://github.com/bruehstdio/relay.git
+> cd relay
+> pip install -e ".[dev]"
+> ```
+
 ## 1. Initialize a New Project
 
 Create a directory for your project and initialize Relay:
