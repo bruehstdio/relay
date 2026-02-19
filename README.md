@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/danielfbmbot/relay/branch/main/graph/badge.svg)](https://codecov.io/gh/danielfbmbot/relay)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://danielfbmbot.github.io/relay/)
+[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://bruehstdio.github.io/relay/)
 
 **Chain AI coding agents like a CI pipeline.** Pass work from Claude Code → OpenCode → Aider (or any combination) with shared context and artifacts.
 
@@ -73,13 +73,13 @@ steps:
 
 ## Documentation
 
-📚 **Full documentation is available at [danielfbmbot.github.io/relay](https://danielfbmbot.github.io/relay/)**
+📚 **Full documentation is available at [bruehstdio.github.io/relay](https://bruehstdio.github.io/relay/)**
 
-- **[Installation](https://danielfbmbot.github.io/relay/installation/)** — Get Relay up and running
-- **[Quick Start](https://danielfbmbot.github.io/relay/quickstart/)** — Your first pipeline in 5 minutes
-- **[Configuration](https://danielfbmbot.github.io/relay/configuration/)** — Complete configuration reference
-- **[CLI Reference](https://danielfbmbot.github.io/relay/cli-reference/)** — All commands and options
-- **[Examples](https://danielfbmbot.github.io/relay/examples/)** — Real-world pipeline examples
+- **[Installation](https://bruehstdio.github.io/relay/installation/)** — Get Relay up and running
+- **[Quick Start](https://bruehstdio.github.io/relay/quickstart/)** — Your first pipeline in 5 minutes
+- **[Configuration](https://bruehstdio.github.io/relay/configuration/)** — Complete configuration reference
+- **[CLI Reference](https://bruehstdio.github.io/relay/cli-reference/)** — All commands and options
+- **[Examples](https://bruehstdio.github.io/relay/examples/)** — Real-world pipeline examples
 
 ## Installation
 

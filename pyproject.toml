@@ -49,11 +49,11 @@ docs = [
 relay = "relay.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/danielfbmbot/relay"
-Documentation = "https://danielfbmbot.github.io/relay/"
-Repository = "https://github.com/danielfbmbot/relay"
-Issues = "https://github.com/danielfbmbot/relay/issues"
-Changelog = "https://github.com/danielfbmbot/relay/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/bruehstdio/relay"
+Documentation = "https://bruehstdio.github.io/relay/"
+Repository = "https://github.com/bruehstdio/relay"
+Issues = "https://github.com/bruehstdio/relay/issues"
+Changelog = "https://github.com/bruehstdio/relay/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/relay"]
